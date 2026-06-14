@@ -1,0 +1,386 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas-bg: #f1f5f9;
+  --color-dot: #cbd5e1;
+  --color-review-bg: #0b0f19;
+  --color-review-dot: #1e293b;
+  --color-desktop-bg: #1a1a2e;
+  --color-desktop-accent: #16213e;
+  --color-macos-blue: #007aff;
+  --color-macos-red: #ff3b30;
+  --color-macos-green: #34c759;
+  --color-macos-yellow: #ffcc00;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.canvas-bg {
+  background-color: var(--color-canvas-bg);
+  background-image: radial-gradient(var(--color-dot) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.desktop-bg-gradient {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.note-card {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.note-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 20px 40px rgba(15, 23, 42, 0.08),
+    0 4px 10px rgba(15, 23, 42, 0.04);
+}
+
+.card-shadow-all {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    -4px 4px 0 -2px #f8fafc,
+    -4px 4px 4px -2px rgba(0, 0, 0, 0.08),
+    4px 6px 0 -2px #fff,
+    4px 6px 4px -2px rgba(0, 0, 0, 0.08),
+    0 10px 0 -4px #f1f5f9,
+    0 12px 10px -4px rgba(0, 0, 0, 0.05);
+}
+
+.card-shadow-thick {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 6px 0 -3px #fff,
+    0 7px 4px -3px rgba(0, 0, 0, 0.1),
+    0 12px 0 -6px #fff,
+    0 13px 4px -6px rgba(0, 0, 0, 0.1),
+    0 18px 0 -9px #fff,
+    0 19px 5px -9px rgba(0, 0, 0, 0.1);
+}
+
+.card-shadow-medium {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 6px 0 -3px #fff,
+    0 7px 4px -3px rgba(0, 0, 0, 0.1),
+    0 12px 0 -6px #fff,
+    0 13px 4px -6px rgba(0, 0, 0, 0.1);
+}
+
+.card-shadow-thin {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.freecell-deck {
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.freecell-deck:hover {
+  transform: translateY(-6px);
+}
+
+.mac-dock-item {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s, box-shadow 0.2s;
+}
+.mac-dock-item:hover {
+  transform: translateY(-10px) scale(1.12);
+}
+
+.deck-active {
+  border-color: #3b82f6 !important;
+  background-color: #eff6ff !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4) !important;
+}
+
+@keyframes dealCardAnimation {
+  0% {
+    transform: translate(var(--start-x), var(--start-y)) scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+  70% {
+    transform: translate(var(--target-x), calc(var(--target-y) - 15px)) scale(1.02) rotate(2deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--target-x), var(--target-y)) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.deal-card-effect {
+  animation: dealCardAnimation 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.review-bg {
+  background-color: var(--color-review-bg);
+  background-image: radial-gradient(var(--color-review-dot) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.slide-left {
+  transform: translateX(-150%) rotate(-15deg) !important;
+  opacity: 0;
+  transition: all 0.4s ease-in-out;
+}
+
+.slide-right {
+  transform: translateX(150%) rotate(15deg) !important;
+  opacity: 0;
+  transition: all 0.4s ease-in-out;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.glass-overlay {
+  background: rgba(241, 245, 249, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.markdown-preview h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+
+.markdown-preview h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #334155;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdown-preview h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #475569;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-preview ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: #475569;
+}
+
+.markdown-preview ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: #475569;
+}
+
+.markdown-preview li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-preview code {
+  background-color: #f1f5f9;
+  color: #db2777;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.markdown-preview pre {
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.85rem;
+  margin: 1rem 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.markdown-preview pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+
+.markdown-preview p {
+  line-height: 1.6;
+  color: #475569;
+  margin-bottom: 1rem;
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  color: #64748b;
+  font-style: italic;
+  background: #f8fafc;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.markdown-preview strong {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.markdown-preview a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.markdown-preview hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 1.5rem 0;
+}
+
+.markdown-preview-dark h1 {
+  color: #f1f5f9;
+  border-bottom-color: #334155;
+}
+
+.markdown-preview-dark h2 {
+  color: #e2e8f0;
+}
+
+.markdown-preview-dark h3 {
+  color: #cbd5e1;
+}
+
+.markdown-preview-dark p {
+  color: #94a3b8;
+}
+
+.markdown-preview-dark ul,
+.markdown-preview-dark ol {
+  color: #94a3b8;
+}
+
+.markdown-preview-dark li {
+  color: #94a3b8;
+}
+
+.markdown-preview-dark code {
+  background-color: #1e293b;
+  color: #f472b6;
+}
+
+.markdown-preview-dark pre {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+}
+
+.markdown-preview-dark blockquote {
+  border-left-color: #3b82f6;
+  background: #0f172a;
+  color: #64748b;
+}
+
+.markdown-preview-dark strong {
+  color: #f1f5f9;
+}
+
+.markdown-preview-dark a {
+  color: #60a5fa;
+}
+
+.markdown-preview-dark hr {
+  border-top-color: #334155;
+}
+
+.window-shadow {
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.desktop-icon-glow {
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
+}
+
+.macos-blur {
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+.macos-shadow {
+  box-shadow: 
+    0 22px 70px 4px rgba(0, 0, 0, 0.28),
+    0 0 0 0.5px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes macosBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.macos-bounce {
+  animation: macosBounce 0.3s ease-out;
+}
+
+@keyframes macosFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.macos-fade-in {
+  animation: macosFadeIn 0.2s ease-out;
+}
+
+::selection {
+  background: rgba(0, 122, 255, 0.3);
+}
