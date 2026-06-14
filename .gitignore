@@ -1,0 +1,7 @@
+node_modules/
+dist/
+
+# Wrangler (Cloudflare Workers)
+.wrangler/
+.wrangler.lock
+dist/wrangler.json
