@@ -137,10 +137,9 @@ async function setDesktopLayoutMode(mode) {
 
 async function updateAppPosition(appId, gridX, gridY) {
   await db.apps.update(Number(appId), { gridX, gridY })
-  const app = apps.value.find((a) => a.id === appId)
-  if (app) {
-    app.gridX = gridX
-    app.gridY = gridY
+  const index = apps.value.findIndex((a) => a.id === appId)
+  if (index !== -1) {
+    apps.value[index] = { ...apps.value[index], gridX, gridY }
   }
 }
 
@@ -155,8 +154,10 @@ async function autoArrangeApps() {
     const gridY = i % maxRows
     const gridX = Math.floor(i / maxRows)
     await db.apps.update(Number(sortedApps[i].id), { gridX, gridY })
-    sortedApps[i].gridX = gridX
-    sortedApps[i].gridY = gridY
+    const idx = apps.value.findIndex((a) => a.id === sortedApps[i].id)
+    if (idx !== -1) {
+      apps.value[idx] = { ...apps.value[idx], gridX, gridY }
+    }
   }
 }
 
@@ -177,8 +178,8 @@ function openCardWindow(cardId) {
     title: card.type === 'article' ? '📄 文章卡' : '🃏 记忆卡',
     x: card.windowX || 100 + (openWindows.value.length * 30),
     y: card.windowY || 100 + (openWindows.value.length * 30),
-    width: card.windowWidth || (card.type === 'article' ? 350 : 310),
-    height: card.windowHeight || (card.type === 'article' ? 380 : 220),
+    width: card.windowWidth || (card.type === 'article' ? (layoutSettings.value.articleWidth ?? 350) : (layoutSettings.value.cardWidth ?? 310)),
+    height: card.windowHeight || (card.type === 'article' ? 380 : (layoutSettings.value.cardHeight ?? 220)),
     z: nextZIndex(),
   }
   openWindows.value.push(windowData)
@@ -384,11 +385,19 @@ async function updateCategory(id, updates) {
 // 艾宾浩斯 SM-2 间隔重复算法
 // quality: 0 = 没记住(重置), 1 = 已掌握(推进)
 const MIN_EASE = 1.3
-const INITIAL_EASE = 2.5
 const FORGET_INTERVAL = 10 * 60 * 1000 // 没记住时 10 分钟后重现
 
 function calcNextReview(card, quality) {
   let { reviewCount, interval, easeFactor } = card
+  const s = layoutSettings.value
+  const initialInterval = s.initialInterval ?? 1
+  const baseEaseFactor = s.easeFactor ?? 2.5
+  const minIntervalMult = s.minIntervalMult ?? 1
+
+  // 使用设置中的 easeFactor 作为初始值
+  if (interval === 0 && easeFactor === 2.5) {
+    easeFactor = baseEaseFactor
+  }
 
   if (quality === 0) {
     // 没记住：重置进度
@@ -403,13 +412,13 @@ function calcNextReview(card, quality) {
     }
   }
 
-  // 已掌握：按 SM-2 推进间隔
+  // 已掌握：按 SM-2 推进间隔，最小间隔受 minIntervalMult 约束
   if (reviewCount === 0) {
-    interval = 1
+    interval = initialInterval
   } else if (reviewCount === 1) {
-    interval = 6
+    interval = Math.ceil(initialInterval * 6 * minIntervalMult)
   } else {
-    interval = Math.round(interval * easeFactor)
+    interval = Math.round(interval * easeFactor * minIntervalMult)
   }
 
   reviewCount++

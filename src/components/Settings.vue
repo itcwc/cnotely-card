@@ -384,6 +384,24 @@
             <p>艾宾浩斯间隔重复算法配置</p>
           </div>
 
+          <div class="setting-group-title">主题</div>
+          <div class="setting-row">
+            <div>
+              <p class="setting-label">工作台主题</p>
+              <p class="setting-desc">复习页面的独立颜色模式</p>
+            </div>
+            <div class="segmented-control">
+              <button
+                v-for="t in reviewThemeOptions"
+                :key="t.value"
+                :class="['segmented-btn', { active: reviewTheme === t.value }]"
+                @click="reviewTheme = t.value"
+              >
+                {{ t.label }}
+              </button>
+            </div>
+          </div>
+
           <div class="setting-group-title">算法参数</div>
           <div class="setting-row">
             <div>
@@ -625,14 +643,14 @@
               <p class="setting-label">清空全部卡片</p>
               <p class="setting-desc">删除所有卡片，保留分类和设置</p>
             </div>
-            <button class="danger-btn">清空卡片</button>
+            <button class="danger-btn" @click="handleClearCards">清空卡片</button>
           </div>
           <div class="setting-row">
             <div>
               <p class="setting-label">重置为出厂设置</p>
               <p class="setting-desc">清除所有数据，恢复到首次安装状态</p>
             </div>
-            <button class="danger-btn">重置全部</button>
+            <button class="danger-btn" @click="handleReset">重置全部</button>
           </div>
         </template>
 
@@ -783,6 +801,12 @@ const cardHeight = ref(220);
 const articleWidth = ref(350);
 
 // 复习
+const reviewTheme = ref('system');
+const reviewThemeOptions = [
+  { value: 'system', label: '跟随桌面' },
+  { value: 'light', label: '浅色' },
+  { value: 'dark', label: '深色' },
+];
 const initialInterval = ref(1);
 const easeFactor = ref(2.5);
 const minIntervalMult = ref(1.3);
@@ -842,6 +866,7 @@ async function loadSettings() {
   autoNextCard.value = s.autoNextCard ?? true
   showEbbinghaus.value = s.showEbbinghaus ?? true
   shuffleCards.value = s.shuffleCards ?? false
+  reviewTheme.value = s.reviewTheme ?? 'system'
 
   focusDuration.value = minToDur[s.focusDuration] || '25分钟'
   shortBreak.value = minToShort[s.shortBreak] || '5分钟'
@@ -891,6 +916,7 @@ watch(minIntervalMult, (v) => saveSetting('minIntervalMult', v))
 watch(autoNextCard, (v) => saveSetting('autoNextCard', v))
 watch(showEbbinghaus, (v) => saveSetting('showEbbinghaus', v))
 watch(shuffleCards, (v) => saveSetting('shuffleCards', v))
+watch(reviewTheme, (v) => saveSetting('reviewTheme', v))
 
 watch(focusDuration, (v) => saveSetting('focusDuration', durToMin[v] || 25))
 watch(shortBreak, (v) => saveSetting('shortBreak', shortToMin[v] || 5))
@@ -1413,6 +1439,11 @@ onMounted(async () => {
   backdrop-filter: blur(4px);
 }
 .confirm-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
   border: none;
   border-radius: 12px;
   padding: 20px 24px;

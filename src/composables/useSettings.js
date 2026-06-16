@@ -29,6 +29,7 @@ const defaults = {
   articleWidth: 350,
 
   // 复习
+  reviewTheme: 'system',
   initialInterval: 1,
   easeFactor: 2.5,
   minIntervalMult: 1.3,

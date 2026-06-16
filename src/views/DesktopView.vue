@@ -23,7 +23,7 @@
         <button @click="toggleLayoutMode" class="menubar-btn">
           <Grid :size="12" v-if="desktopLayoutMode === 'auto'" />
           <Move :size="12" v-else />
-          {{ desktopLayoutMode === "auto" ? "整理" : "自由" }}
+          {{ desktopLayoutMode === "auto" ? "自动" : "自由" }}
         </button>
         <button @click="showSetting = true" class="menubar-btn" title="设置">
           <SettingsIcon :size="12" /> 设置
@@ -37,9 +37,9 @@
 
     <main class="absolute top-7 left-0 right-0 bottom-0 pt-2 px-3">
       <div v-if="desktopLayoutMode === 'auto'"
-        class="grid grid-flow-col grid-rows-[repeat(auto-fill,90px)] gap-x-4 content-start h-full" ref="autoGridRef">
+        class="flex flex-col flex-wrap content-start h-full" :style="autoFlexGap" ref="autoGridRef">
         <DesktopIcon v-for="(app, index) in apps" :key="app.id" :app="app" :is-selected="selectedIconId === app.id"
-          :layout-mode="desktopLayoutMode" :class="{
+          :layout-mode="desktopLayoutMode" :grid-size="desktopIconGap" :show-label="showIconLabels" :class="{
             'icon-drop-target':
               dropTargetIndex === index && draggingAppId !== app.id,
           }" @click="handleIconClick" @contextmenu="handleIconContextMenu"
@@ -48,7 +48,7 @@
       <div v-else class="relative w-full h-full">
         <DesktopIcon v-for="app in apps" :key="app.id" :app="app" :is-selected="selectedIconId === app.id"
           :grid-x="previewPositions[app.id]?.gridX ?? app.gridX" :grid-y="previewPositions[app.id]?.gridY ?? app.gridY"
-          :layout-mode="desktopLayoutMode" :is-preview="!!previewPositions[app.id]" @click="handleIconClick"
+          :layout-mode="desktopLayoutMode" :grid-size="desktopIconGap" :show-label="showIconLabels" :is-preview="!!previewPositions[app.id]" @click="handleIconClick"
           @contextmenu="handleIconContextMenu" @drag-move="handleIconDragMove" @drag-end="handleIconDragEnd"
           @dragging="handleIconDragging" />
       </div>
@@ -502,6 +502,11 @@ const barOpacity = computed(() => wallpaperSettings.value.barOpacity ?? 50)
 const reduceMotion = computed(() => wallpaperSettings.value.reduceMotion ?? false)
 const dockZoomEnabled = computed(() => wallpaperSettings.value.dockZoom ?? true)
 const showIconLabels = computed(() => wallpaperSettings.value.showIconLabels ?? true)
+const desktopIconGap = computed(() => wallpaperSettings.value.iconGap ?? 90)
+const trashDirectDelete = computed(() => wallpaperSettings.value.trashDirectDelete ?? false)
+const autoFlexGap = computed(() => ({
+  gap: `${Math.round(desktopIconGap.value * 0.2)}px`,
+}))
 
 // ===== 所有背景色全部走 computed → :style，零 CSS 变量依赖 =====
 
@@ -713,7 +718,11 @@ function handleWindowDragging(windowId, clientX, clientY) {
 
 function handleWindowDragEnd(windowId) {
   if (isDraggingOverTrash.value && draggingId.value) {
-    deleteCard(String(draggingId.value));
+    if (trashDirectDelete.value) {
+      db.cards.delete(Number(draggingId.value));
+    } else {
+      deleteCard(String(draggingId.value));
+    }
     closeWindow(windowId);
   }
   isDraggingOverTrash.value = false;
@@ -775,8 +784,8 @@ function handleReorder(clientX, clientY, appId) {
   const x = clientX - rect.left;
   const y = clientY - rect.top;
 
-  const iconWidth = 80 + 16;
-  const iconHeight = 90;
+  const iconWidth = desktopIconGap.value;
+  const iconHeight = desktopIconGap.value;
   const cols = Math.max(1, Math.floor(rect.width / iconWidth));
 
   const col = Math.floor(x / iconWidth);
@@ -799,7 +808,11 @@ function finishReorder(clientX, clientY) {
     if (draggingAppId.value) {
       const app = apps.value.find((a) => a.id === draggingAppId.value);
       if (!app?.pinned) {
-        deleteApp(draggingAppId.value);
+        if (trashDirectDelete.value) {
+          permanentlyDeleteApp(draggingAppId.value);
+        } else {
+          deleteApp(draggingAppId.value);
+        }
       }
     }
     isDraggingOverTrash.value = false;
@@ -851,7 +864,11 @@ async function handleIconDragEnd(appId, gridX, gridY) {
   if (isDraggingOverTrash.value) {
     const app = apps.value.find((a) => a.id === appId);
     if (!app?.pinned) {
-      deleteApp(appId);
+      if (trashDirectDelete.value) {
+        permanentlyDeleteApp(appId);
+      } else {
+        deleteApp(appId);
+      }
     }
     isDraggingOverTrash.value = false;
     draggingType.value = null;
@@ -1036,10 +1053,10 @@ function getCategoryColor(slug) {
 
 function openCategoryFolder(cat) {
   const cardsInCategory = cat.isDefault
-    ? allCards.value.filter((c) => !c.categoryId)
+    ? allCards.value.filter((c) => !c.categoryId || c.categoryId === cat.id)
     : allCards.value.filter((c) => c.categoryId === cat.id);
   cardsInCategory.forEach((card) => {
-    openCardWindow(card.id);
+    openCardWindow(String(card.id));
   });
   activeWindowId.value = null;
 }

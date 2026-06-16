@@ -1,9 +1,9 @@
 <template>
   <div
     ref="iconRef"
-    class="macos-icon group flex flex-col items-center justify-center w-[76px] h-[90px] p-1 cursor-pointer select-none"
+    class="macos-icon group flex flex-col items-center justify-center w-[76px] p-1 cursor-pointer select-none"
     :class="{ 'macos-icon-selected': isSelected, 'macos-icon-dragging': isDragging && hasMoved }"
-    :style="dragStyle"
+    :style="[dragStyle, layoutMode === 'free' ? iconCellStyle : {}]"
     @contextmenu.prevent="emit('contextmenu', app, $event)"
     @pointerdown="startDrag"
   >
@@ -17,7 +17,7 @@
         <img v-else :src="app.icon" :alt="app.name" draggable="false" class="w-9 h-9 object-contain pointer-events-none" />
       </div>
     </div>
-    <span class="icon-label text-[11px] font-medium truncate w-full text-center drop-shadow-md px-1">
+    <span v-show="showLabel" class="icon-label text-[11px] font-medium truncate w-full text-center drop-shadow-md px-1">
       {{ app.name }}
     </span>
   </div>
@@ -54,6 +54,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  gridSize: {
+    type: Number,
+    default: 90,
+  },
+  showLabel: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['click', 'contextmenu', 'drag-move', 'drag-end', 'drag-start', 'dragging', 'reorder', 'reorder-end'])
@@ -64,8 +72,9 @@ const hasMoved = ref(false)
 const dragStartPos = ref({ x: 0, y: 0 })
 const currentPos = ref({ x: 0, y: 0 })
 const initialPos = ref({ x: 0, y: 0 })
+const mouseOffset = ref({ x: 0, y: 0 })
 
-const GRID_SIZE = 90
+const GRID_SIZE = computed(() => props.gridSize)
 const ICON_WIDTH = 76
 const ICON_HEIGHT = 90
 const MOVE_THRESHOLD = 5
@@ -94,12 +103,16 @@ const iconStyle = computed(() => {
   }
 })
 
+const iconCellStyle = computed(() => ({
+  height: `${props.gridSize}px`,
+}))
+
 const positionStyle = computed(() => {
   if (props.layoutMode === 'free') {
     return {
       position: 'absolute',
-      left: `${props.gridX * GRID_SIZE}px`,
-      top: `${props.gridY * GRID_SIZE}px`,
+      left: `${props.gridX * GRID_SIZE.value}px`,
+      top: `${props.gridY * GRID_SIZE.value}px`,
     }
   }
   return {}
@@ -108,13 +121,13 @@ const positionStyle = computed(() => {
 const dragStyle = computed(() => {
   if (isDragging.value && hasMoved.value) {
     return {
-      position: props.layoutMode === 'free' ? 'absolute' : 'fixed',
+      position: 'fixed',
       left: `${currentPos.value.x}px`,
       top: `${currentPos.value.y}px`,
       transform: props.layoutMode === 'auto' ? 'scale(1.1)' : '',
-      opacity: props.layoutMode === 'auto' ? 0.8 : 1,
+      opacity: 0.8,
       zIndex: 1000,
-      pointerEvents: props.layoutMode === 'auto' ? 'none' : 'auto',
+      pointerEvents: 'none',
     }
   }
   return positionStyle.value
@@ -124,14 +137,11 @@ function startDrag(e) {
   if (e.button !== 0) return
   hasMoved.value = false
   dragStartPos.value = { x: e.clientX, y: e.clientY }
-  
+
   const isFreeMode = props.layoutMode === 'free'
-  
+
   isDragging.value = true
-  
-  const startX = props.gridX * GRID_SIZE
-  const startY = props.gridY * GRID_SIZE
-  
+
   if (props.layoutMode === 'auto') {
     const rect = iconRef.value?.getBoundingClientRect()
     if (rect) {
@@ -139,7 +149,15 @@ function startDrag(e) {
       initialPos.value = { x: rect.left, y: rect.top }
     }
   } else {
-    currentPos.value = { x: startX, y: startY }
+    // free 模式：记录图标当前视口坐标和鼠标偏移量
+    const rect = iconRef.value?.getBoundingClientRect()
+    if (rect) {
+      currentPos.value = { x: rect.left, y: rect.top }
+      mouseOffset.value = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      }
+    }
   }
 
   try {
@@ -149,22 +167,23 @@ function startDrag(e) {
   function onPointerMove(moveEvent) {
     const deltaX = moveEvent.clientX - dragStartPos.value.x
     const deltaY = moveEvent.clientY - dragStartPos.value.y
-    
+
     if (Math.abs(deltaX) > MOVE_THRESHOLD || Math.abs(deltaY) > MOVE_THRESHOLD) {
       hasMoved.value = true
     }
-    
+
     if (hasMoved.value) {
       emit('dragging', moveEvent.clientX, moveEvent.clientY)
     }
 
     if (hasMoved.value && isFreeMode) {
+      // 自由模式：currentPos 保持视口坐标，dragStyle 用 position:fixed
       currentPos.value = {
-        x: startX + deltaX,
-        y: startY + deltaY,
+        x: moveEvent.clientX - mouseOffset.value.x,
+        y: moveEvent.clientY - mouseOffset.value.y,
       }
     }
-    
+
     if (hasMoved.value && !isFreeMode) {
       currentPos.value = {
         x: initialPos.value.x + deltaX,
@@ -182,13 +201,21 @@ function startDrag(e) {
     } catch (_) {}
 
     if (hasMoved.value && isFreeMode) {
-      const gridX = Math.round(currentPos.value.x / GRID_SIZE)
-      const gridY = Math.round(currentPos.value.y / GRID_SIZE)
-      
-      const clampedX = Math.max(0, gridX)
-      const clampedY = Math.max(0, gridY)
-      
-      emit('drag-end', props.app.id, clampedX, clampedY)
+      // 自由模式：currentPos 是视口坐标，需转为容器相对坐标来算 gridX/gridY
+      const container = iconRef.value?.offsetParent
+      const containerRect = container?.getBoundingClientRect()
+      if (containerRect) {
+        const relX = currentPos.value.x - containerRect.left
+        const relY = currentPos.value.y - containerRect.top
+        const gridX = Math.max(0, Math.round(relX / GRID_SIZE.value))
+        const gridY = Math.max(0, Math.round(relY / GRID_SIZE.value))
+        emit('drag-end', props.app.id, gridX, gridY)
+      } else {
+        // fallback：直接用 currentPos（此时是视口坐标，不准确但不应发生）
+        const gridX = Math.max(0, Math.round(currentPos.value.x / GRID_SIZE.value))
+        const gridY = Math.max(0, Math.round(currentPos.value.y / GRID_SIZE.value))
+        emit('drag-end', props.app.id, gridX, gridY)
+      }
     } else if (hasMoved.value && !isFreeMode) {
       emit('reorder-end', upEvent.clientX, upEvent.clientY)
     } else if (!hasMoved.value) {

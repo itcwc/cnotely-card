@@ -131,15 +131,15 @@ const seedCategories = [
 ]
 
 const seedCards = [
-  { categoryId: 1, question: '如何在 CSS 中利用多层 box-shadow 完美优雅地模拟出卡片层叠堆起的物理厚度？', answer: '使用逗号分隔多组阴影偏移量即可。', source: 'https://developer.mozilla.org', createdAt: Date.now(), sortOrder: 100 },
-  { categoryId: 1, question: 'Tailwind CSS 的 perspective 属性如何开启 3D 空间？', answer: '外层包裹 perspective-1000，内层开启 transform-style-3d', source: 'https://tailwindcss.com', createdAt: Date.now(), sortOrder: 200 },
-  { categoryId: 1, question: 'IndexedDB 的最大存储容量是多少？', answer: '一般来说由浏览器和硬盘决定，通常无固定上限限制。', source: '', createdAt: Date.now(), sortOrder: 300 },
-  { categoryId: 2, question: 'ephemeral', answer: 'adj. 朝生暮死、转瞬即逝的', source: 'https://ldoceonline.com', createdAt: Date.now(), sortOrder: 400 },
-  { categoryId: 2, question: 'serendipity', answer: 'n. 缘分、不期而遇的小确幸', source: 'https://ldoceonline.com', createdAt: Date.now(), sortOrder: 500 },
-  { categoryId: 3, question: '今晚去超市记得买咖啡豆和全脂牛奶。📢', answer: '未设置反面内容', source: '', createdAt: Date.now(), sortOrder: 600 },
-  { categoryId: 3, question: '看完了《设计心理学》，需要整理一份拟物化心流笔记。', answer: '未设置反面内容', source: '', createdAt: Date.now(), sortOrder: 700 },
+  { _categorySlug: 'frontend', question: '如何在 CSS 中利用多层 box-shadow 完美优雅地模拟出卡片层叠堆起的物理厚度？', answer: '使用逗号分隔多组阴影偏移量即可。', source: 'https://developer.mozilla.org', createdAt: Date.now(), sortOrder: 100 },
+  { _categorySlug: 'frontend', question: 'Tailwind CSS 的 perspective 属性如何开启 3D 空间？', answer: '外层包裹 perspective-1000，内层开启 transform-style-3d', source: 'https://tailwindcss.com', createdAt: Date.now(), sortOrder: 200 },
+  { _categorySlug: 'frontend', question: 'IndexedDB 的最大存储容量是多少？', answer: '一般来说由浏览器和硬盘决定，通常无固定上限限制。', source: '', createdAt: Date.now(), sortOrder: 300 },
+  { _categorySlug: 'vocab', question: 'ephemeral', answer: 'adj. 朝生暮死、转瞬即逝的', source: 'https://ldoceonline.com', createdAt: Date.now(), sortOrder: 400 },
+  { _categorySlug: 'vocab', question: 'serendipity', answer: 'n. 缘分、不期而遇的小确幸', source: 'https://ldoceonline.com', createdAt: Date.now(), sortOrder: 500 },
+  { _categorySlug: 'notes', question: '今晚去超市记得买咖啡豆和全脂牛奶。📢', answer: '未设置反面内容', source: '', createdAt: Date.now(), sortOrder: 600 },
+  { _categorySlug: 'notes', question: '看完了《设计心理学》，需要整理一份拟物化心流笔记。', answer: '未设置反面内容', source: '', createdAt: Date.now(), sortOrder: 700 },
   {
-    categoryId: 1,
+    _categorySlug: 'frontend',
     type: 'article',
     sortOrder: 800,
     question: `# cnotely的产品哲学：为什么我们需要记忆卡片牌桌？
@@ -234,8 +234,26 @@ export async function seedDatabase() {
   const count = await db.categories.count()
   if (count > 0) return
 
-  await db.categories.bulkAdd(seedCategories)
-  await db.cards.bulkAdd(seedCards)
+  // 插入分类后读取实际分配的 ID（auto-increment 不归零，ID 可能与预设不同）
+  const catIds = await db.categories.bulkAdd(seedCategories, { allKeys: true })
+
+  // slug → 实际 ID 映射
+  const slugToId = {}
+  seedCategories.forEach((cat, i) => {
+    slugToId[cat.slug] = catIds[i]
+  })
+
+  // 动态替换卡片 categoryId
+  const cardsWithRealIds = seedCards.map((card) => {
+    const slug = card._categorySlug
+    return {
+      ...card,
+      _categorySlug: undefined,
+      categoryId: slug ? slugToId[slug] : card.categoryId,
+    }
+  })
+
+  await db.cards.bulkAdd(cardsWithRealIds)
   await db.apps.bulkAdd(seedApps)
 }
 

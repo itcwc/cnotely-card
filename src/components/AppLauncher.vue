@@ -571,7 +571,14 @@ const { settings } = useSettings();
 
 const shouldUseDarkTheme = computed(() => settings.value.theme === 'dark');
 
-const activeTab = ref("app");
+// 根据默认卡片类型初始化标签页
+const defaultTab = computed(() => {
+  const dt = settings.value.defaultCardType;
+  if (dt === 'article') return 'article';
+  return 'qa';
+});
+
+const activeTab = ref(defaultTab.value);
 const showCategoryDropdown = ref(false);
 const categoryDropdownRef = ref(null);
 const teleportedDropdownRef = ref(null);

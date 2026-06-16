@@ -1,166 +1,133 @@
 <template>
-  <div class="review-bg h-screen flex flex-col text-slate-200 antialiased overflow-hidden select-none">
+  <div class="review-page h-screen flex flex-col antialiased overflow-hidden select-none" :class="reviewThemeClass">
 
-    <header class="macos-menubar absolute top-0 left-0 right-0 h-7 flex items-center justify-between px-4 z-50">
+    <!-- ===== 顶部 macOS 磨砂菜单栏 ===== -->
+    <header class="review-menubar absolute top-0 left-0 right-0 h-7 flex items-center justify-between px-4 z-50">
       <div class="flex items-center gap-4">
-        <router-link to="/" class="flex items-center gap-1.5 text-white/50 hover:text-white/80 transition-colors">
+        <router-link to="/" class="flex items-center gap-1.5 review-link">
           <ArrowLeft :size="12" />
           <span class="text-xs">返回画布</span>
         </router-link>
-        <span class="text-xs font-semibold text-white/90 tracking-tight flex items-center gap-1"><Zap :size="12" class="text-amber-400" /> {{ activeCategoryName }}</span>
-        <span class="text-xs text-white/50 font-mono">{{ Math.min(currentIndex + 1, sessionDeck.length) }} / {{ sessionDeck.length }}</span>
+        <span class="text-xs font-semibold tracking-tight flex items-center gap-1 review-title">
+          <Zap :size="12" class="text-amber-400" /> {{ activeCategoryName }}
+        </span>
+        <span class="text-xs font-mono review-counter">{{ Math.min(currentIndex + 1, sessionDeck.length) }} / {{ sessionDeck.length }}</span>
       </div>
       <div class="flex items-center gap-3">
-        <button
-          @click="showResetConfirm = true"
-          class="text-xs text-white/40 hover:text-rose-400 transition-colors flex items-center gap-1"
-          title="重置当前分类所有卡片的学习进度"
-        >
+        <button @click="showResetConfirm = true" class="text-xs review-reset-btn flex items-center gap-1" title="重置当前分类所有卡片的学习进度">
           <RotateCcw :size="12" /> 重置进度
         </button>
-        <div class="flex items-center gap-1.5 text-[10px] text-white/40">
-          <kbd class="px-1 py-0.5 bg-white/10 rounded text-white/50 font-mono">Space</kbd>翻面
-          <kbd class="px-1 py-0.5 bg-white/10 rounded text-white/50 font-mono">1</kbd>没记住
-          <kbd class="px-1 py-0.5 bg-white/10 rounded text-white/50 font-mono">2</kbd>已掌握
+        <div class="flex items-center gap-1.5 text-[10px] review-kbd-hints">
+          <kbd class="review-kbd">Space</kbd>翻面
+          <kbd class="review-kbd">1</kbd>没记住
+          <kbd class="review-kbd">2</kbd>已掌握
         </div>
-        <span class="text-xs text-white/80 font-medium">{{ currentDate }}</span>
-        <span class="text-xs text-white/80 font-medium">{{ currentTime }}</span>
+        <span class="text-xs font-medium review-clock">{{ currentDate }}</span>
+        <span class="text-xs font-medium review-clock">{{ currentTime }}</span>
       </div>
     </header>
 
     <div class="flex-1 flex relative overflow-hidden" style="padding-top: 28px;">
 
-      <!-- Sidebar -->
-      <aside
-        class="sidebar-panel flex flex-col border-r border-slate-800/60 bg-slate-900/60 backdrop-blur-sm transition-all duration-300 ease-in-out z-10 shrink-0"
-        :class="sidebarCollapsed ? 'w-12' : 'w-60'"
-      >
-        <!-- Collapse toggle -->
-        <div class="flex items-center justify-between px-2 h-8 border-b border-slate-800/40 shrink-0">
-          <button @click="sidebarCollapsed = !sidebarCollapsed" class="w-7 h-6 flex items-center justify-center rounded hover:bg-slate-700/60 transition-colors text-slate-500 hover:text-slate-300">
+      <!-- ===== 侧边栏 — 磨砂玻璃 ===== -->
+      <aside class="review-sidebar flex flex-col border-r z-10 shrink-0 transition-all duration-300 ease-in-out"
+        :class="sidebarCollapsed ? 'w-12' : 'w-60'">
+        <!-- 折叠按钮 -->
+        <div class="flex items-center justify-between px-2 h-8 border-b shrink-0 review-sidebar-hd">
+          <button @click="sidebarCollapsed = !sidebarCollapsed" class="w-7 h-6 flex items-center justify-center rounded review-sidebar-toggle">
             <PanelLeftClose v-if="!sidebarCollapsed" :size="14" />
             <PanelLeftOpen v-else :size="14" />
           </button>
-          <span v-if="!sidebarCollapsed" class="text-[10px] font-bold text-slate-500 tracking-wider uppercase">复习牌组</span>
+          <span v-if="!sidebarCollapsed" class="text-[10px] font-bold tracking-wider uppercase review-sidebar-title">复习牌组</span>
         </div>
 
-        <!-- Card groups (visible when expanded) -->
+        <!-- 牌组列表 -->
         <div v-if="!sidebarCollapsed" class="flex-1 overflow-y-auto p-2 space-y-2">
-          <!-- All cards -->
-          <div
-            class="bg-slate-800/40 border rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-colors hover:bg-slate-800/60"
-            :class="activeCategoryId === null ? 'border-indigo-500/50 bg-indigo-500/10' : 'border-slate-700/30'"
-            @click="switchCategory(null)"
-          >
-            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs shrink-0 bg-indigo-600">
+          <div class="review-deck-item" :class="{ 'review-deck-active': activeCategoryId === null }" @click="switchCategory(null)">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs shrink-0" style="background: var(--review-accent)">
               <Layers :size="16" />
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="text-sm font-bold text-slate-300 truncate">全部卡片</h3>
-              <p class="text-[11px] text-slate-500 font-medium mt-0.5">共 {{ deck.length }} 张</p>
+              <h3 class="text-sm font-bold truncate review-deck-name">全部卡片</h3>
+              <p class="text-[11px] font-medium mt-0.5 review-deck-meta">共 {{ deck.length }} 张</p>
             </div>
-            <div v-if="activeCategoryId === null" class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center shrink-0">
+            <div v-if="activeCategoryId === null" class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: var(--review-accent)">
               <Check :size="11" class="text-white" />
             </div>
           </div>
-          <div
-            v-for="group in cardGroups"
-            :key="group.categoryId"
-            class="bg-slate-800/40 border rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-colors hover:bg-slate-800/60"
-            :class="activeCategoryId === group.categoryId ? 'border-indigo-500/50 bg-indigo-500/10' : 'border-slate-700/30'"
-            @click="switchCategory(group.categoryId)"
-          >
-            <div
-              class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs shrink-0"
-              :style="{ backgroundColor: group.color || '#64748b' }"
-            >
+          <div v-for="group in cardGroups" :key="group.categoryId"
+            class="review-deck-item" :class="{ 'review-deck-active': activeCategoryId === group.categoryId }"
+            @click="switchCategory(group.categoryId)">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs shrink-0"
+              :style="{ backgroundColor: group.color || '#64748b' }">
               <component v-if="group.iconComp && iconComponents[group.iconComp]" :is="iconComponents[group.iconComp]" :size="16" />
               <HelpCircle v-else :size="16" />
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="text-sm font-bold text-slate-300 truncate">{{ group.name }}</h3>
-              <p class="text-[11px] text-slate-500 font-medium mt-0.5">剩余 {{ group.remaining }} 张</p>
+              <h3 class="text-sm font-bold truncate review-deck-name">{{ group.name }}</h3>
+              <p class="text-[11px] font-medium mt-0.5 review-deck-meta">剩余 {{ group.remaining }} 张</p>
             </div>
-            <div v-if="activeCategoryId === group.categoryId" class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center shrink-0">
+            <div v-if="activeCategoryId === group.categoryId" class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: var(--review-accent)">
               <Check :size="11" class="text-white" />
             </div>
-            <ChevronRight v-else :size="14" class="text-slate-600 shrink-0" />
+            <ChevronRight v-else :size="14" class="review-deck-arrow shrink-0" />
           </div>
         </div>
 
-        <!-- Collapsed: mini group indicators -->
+        <!-- 折叠态迷你指示器 -->
         <div v-else class="flex-1 overflow-y-auto py-2 flex flex-col items-center gap-2">
-          <div
-            class="w-6 h-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold shrink-0 cursor-pointer transition-all"
-            :class="activeCategoryId === null ? 'ring-1 ring-indigo-400' : ''"
-            :style="{ backgroundColor: activeCategoryId === null ? '#4f46e5' : '#475569' }"
-            title="全部卡片"
-            @click="switchCategory(null)"
-          >
+          <div class="w-6 h-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold shrink-0 cursor-pointer transition-all"
+            :style="{ backgroundColor: activeCategoryId === null ? 'var(--review-accent)' : 'var(--review-sidebar-mini-bg, #94a3b8)' }"
+            title="全部卡片" @click="switchCategory(null)">
             <Layers :size="10" />
           </div>
-          <div
-            v-for="group in cardGroups"
-            :key="group.categoryId"
+          <div v-for="group in cardGroups" :key="group.categoryId"
             class="w-6 h-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold shrink-0 cursor-pointer transition-all"
-            :class="activeCategoryId === group.categoryId ? 'ring-1 ring-indigo-400 scale-110' : ''"
-            :style="{ backgroundColor: group.color || '#64748b' }"
+            :class="activeCategoryId === group.categoryId ? 'ring-1 scale-110' : ''"
+            :style="{ backgroundColor: group.color || '#64748b', '--tw-ring-color': 'var(--review-accent)' }"
             :title="group.name + ' - 剩余' + group.remaining + '张'"
-            @click="switchCategory(group.categoryId)"
-          >
+            @click="switchCategory(group.categoryId)">
             {{ group.remaining }}
           </div>
         </div>
 
-        <!-- Pomodoro timer (always visible) -->
-        <div class="shrink-0 border-t border-slate-800/40 transition-all duration-300" :class="sidebarCollapsed ? 'p-1.5' : 'p-3'">
-          <div v-if="!sidebarCollapsed" class="bg-slate-800/50 rounded-xl p-3 border border-slate-700/30">
-            <div class="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
+        <!-- 番茄钟 -->
+        <div class="shrink-0 border-t review-pomodoro-section transition-all duration-300" :class="sidebarCollapsed ? 'p-1.5' : 'p-3'">
+          <div v-if="!sidebarCollapsed" class="review-pomodoro-card rounded-xl p-3 border">
+            <div class="flex items-center justify-between text-xs font-bold mb-2 review-pomodoro-hd">
               <div class="flex items-center gap-1.5">
                 <Timer :size="12" class="text-amber-400" />
                 <span>番茄专注钟</span>
               </div>
-              <span class="text-[10px] text-slate-500">今日 {{ todayCount }} 个 · 累计 {{ totalMinutes }} 分钟</span>
+              <span class="text-[10px] review-pomodoro-stats">今日 {{ todayCount }} 个 · 累计 {{ totalMinutes }} 分钟</span>
             </div>
-            <!-- Progress bar -->
-            <div class="w-full h-1 bg-slate-700/50 rounded-full mb-2 overflow-hidden">
-              <div
-                class="h-full rounded-full transition-all duration-1000 ease-linear"
-                :class="pomodoroRunning ? 'bg-amber-400' : 'bg-slate-600'"
-                :style="{ width: progressPercent + '%' }"
-              />
+            <div class="w-full h-1 rounded-full mb-2 overflow-hidden review-progress-track">
+              <div class="h-full rounded-full transition-all duration-1000 ease-linear"
+                :class="pomodoroRunning ? 'bg-amber-400' : 'review-progress-idle'"
+                :style="{ width: progressPercent + '%' }" />
             </div>
-            <div class="font-mono text-xl font-bold text-white tracking-wider mb-2 text-center" :class="{ 'text-amber-400': pomodoroRunning && pomodoroSeconds < 60 }">
+            <div class="font-mono text-xl font-bold tracking-wider mb-2 text-center"
+              :class="pomodoroRunning && pomodoroSeconds < 60 ? 'text-amber-400' : 'review-pomodoro-time'">
               {{ pomodoroDisplay }}
             </div>
             <div class="flex gap-1.5">
-              <button
-                @click="togglePomodoro"
-                class="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                :class="pomodoroRunning ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'bg-indigo-600 text-white hover:bg-indigo-700'"
-              >
-                {{ pomodoroRunning ? '暂停' : (pomodoroSeconds < POMODORO_TOTAL ? '继续' : '开始专注') }}
+              <button @click="togglePomodoro" class="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                :class="pomodoroRunning ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'review-pomodoro-start'">
+                {{ pomodoroRunning ? '暂停' : (pomodoroSeconds < pomodoroTotal ? '继续' : '开始专注') }}
               </button>
-              <button
-                v-if="pomodoroRunning || pomodoroSeconds < POMODORO_TOTAL"
-                @click="resetPomodoro"
-                class="px-2 py-1.5 bg-slate-700/60 text-slate-400 rounded-lg text-xs hover:bg-slate-700 hover:text-slate-300 transition-colors"
-              >
+              <button v-if="pomodoroRunning || pomodoroSeconds < pomodoroTotal" @click="resetPomodoro"
+                class="px-2 py-1.5 rounded-lg text-xs transition-colors review-pomodoro-reset">
                 <RotateCcw :size="12" />
               </button>
             </div>
           </div>
-
-          <!-- Collapsed: mini timer -->
           <div v-else class="flex flex-col items-center gap-1">
-            <div class="font-mono text-[10px] font-bold text-center" :class="pomodoroRunning ? 'text-amber-400' : 'text-slate-500'">
+            <div class="font-mono text-[10px] font-bold text-center"
+              :class="pomodoroRunning ? 'text-amber-400' : 'review-pomodoro-time'">
               {{ pomodoroDisplayMini }}
             </div>
-            <button
-              @click="togglePomodoro"
-              class="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-              :class="pomodoroRunning ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'bg-slate-700/60 text-slate-500 hover:text-slate-300'"
-            >
+            <button @click="togglePomodoro" class="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+              :class="pomodoroRunning ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'review-pomodoro-reset'">
               <Pause v-if="pomodoroRunning" :size="10" />
               <Play v-else :size="10" />
             </button>
@@ -168,173 +135,148 @@
         </div>
       </aside>
 
-      <!-- Main content -->
+      <!-- ===== 主内容区 ===== -->
       <main class="flex-1 flex flex-col items-center justify-center p-6 relative">
 
-        <!-- QA Card (3D flip) -->
+        <!-- QA 卡片（3D 翻转） -->
         <div v-if="!isComplete && !isArticleCard" class="relative" :style="{ ...cardSize, perspective: settings.flipPerspective + 'px' }">
-
           <div
-            :class="[
-              'absolute inset-0 w-full h-full cursor-pointer z-30',
-              settings.flip3d ? 'transform-style-3d' : '',
-              flipContainerClass,
-              slideDirection,
-            ]"
+            :class="['absolute inset-0 w-full h-full cursor-pointer z-30', settings.flip3d ? 'transform-style-3d' : '', flipContainerClass, slideDirection]"
             :style="{ transition: `transform ${settings.flipSpeed}ms cubic-bezier(0.4,0,0.2,1)` }"
-            @click="flipCurrentCard"
-          >
-            <div
-              :class="[
-                'absolute inset-0 bg-slate-900 border border-slate-800 rounded-[10px] p-6 shadow-2xl shadow-black/80 flex flex-col justify-between border-t-5',
-                settings.flip3d ? 'backface-hidden' : '',
-              ]"
-              :style="[currentCard.iconColor ? { borderTopColor: currentCard.iconColor } : {}, flipFrontStyle]"
-            >
-              <div class="flex-1 flex flex-col overflow-hidden">
-                <div class="flex justify-between items-center text-xs text-slate-500 mb-3 shrink-0">
-                  <span class="flex items-center gap-1"><HelpCircle :size="14" class="text-blue-400" /> {{ currentCard.tag || '#未归类' }}</span>
-                  <span :class="ebbinghausColorClass">艾宾浩斯判定：{{ ebbinghausStatus.text }}</span>
-                </div>
-                <div class="prose prose-slate prose-invert max-w-none flex-1 overflow-y-auto pr-1 review-scroll" :style="{ '--category-color': currentCard.iconColor || '#cbd5e1' }" v-html="questionHtml"></div>
+            @click="flipCurrentCard">
+            <!-- 正面 — 纸质感卡片 -->
+            <div :class="['absolute inset-0 review-card-front rounded-xl flex flex-col overflow-hidden', settings.flip3d ? 'backface-hidden' : '']"
+              :style="[flipFrontStyle]">
+              <!-- 顶部渐变条 + 分类徽章 -->
+              <div class="shrink-0 relative" :style="cardGradientStyle">
+                <span class="review-category-badge" :style="{ backgroundColor: cardCategoryInfo.color }">
+                  {{ cardCategoryInfo.name }}
+                </span>
               </div>
-              <div class="text-center text-xs text-slate-500 font-medium animate-bounce pt-3 shrink-0">
-                <Lightbulb :size="14" class="inline text-amber-400 align-middle" /> 点击卡片或按 <span class="text-slate-400 font-bold">空格键</span> 揭晓答案
+              <!-- 卡片内容 — 问题 -->
+              <div class="flex-1 flex flex-col overflow-hidden px-6 pt-4 pb-4">
+                <div class="review-prose max-w-none flex-1 overflow-y-auto pr-1 review-scroll" :style="questionTextStyle" v-html="questionHtml"></div>
+              </div>
+              <!-- 底部来源链接 -->
+              <div v-if="currentCard.source" class="shrink-0 flex items-center gap-1.5 px-6 pb-3 pt-1 text-[11px] review-card-footer">
+                <Link :size="11" class="review-card-footer-icon shrink-0" />
+                <a :href="currentCard.source" target="_blank" @click.stop class="review-card-footer-link truncate">{{ displaySource }}</a>
               </div>
             </div>
-
-            <div
-              :class="[
-                'absolute inset-0 bg-slate-900 border border-slate-800 rounded-[10px] p-6 shadow-2xl shadow-black/80 flex flex-col justify-between border-t-5',
-                settings.flip3d ? 'backface-hidden rotate-y-180' : '',
-              ]"
-              :style="[currentCard.iconColor ? { borderTopColor: currentCard.iconColor } : { borderTopColor: '#10b981' }, flipBackStyle]"
-            >
-              <div class="flex-1 flex flex-col overflow-hidden">
-                <div class="flex justify-between items-center text-xs text-slate-500 mb-3 shrink-0">
-                  <span class="flex items-center gap-1"><CheckCircle2 :size="14" class="text-emerald-400" /> ANSWER</span>
-                  <span v-if="currentCard.source" class="text-slate-400 flex items-center gap-1"><Link :size="12" /> {{ displaySource }}</span>
-                </div>
-                <div class="prose-answer max-w-none flex-1 overflow-y-auto pr-1 review-scroll" v-html="answerHtml"></div>
+            <!-- 背面 — 深色答题面 -->
+            <div :class="['absolute inset-0 review-card-back rounded-xl flex flex-col overflow-hidden', settings.flip3d ? 'backface-hidden rotate-y-180' : '']"
+              :style="[flipBackStyle]">
+              <!-- 顶部渐变条 + 分类徽章 -->
+              <div class="shrink-0 relative" :style="cardGradientStyle">
+                <span class="review-category-badge" :style="{ backgroundColor: cardCategoryInfo.color }">
+                  {{ cardCategoryInfo.name }}
+                </span>
               </div>
-              <div class="text-center text-xs text-slate-500 font-medium pt-2 shrink-0">
-                再次点击可翻回正面
+              <!-- 卡片内容 — 答案 -->
+              <div class="flex-1 flex flex-col overflow-hidden px-6 pt-3 pb-4">
+                <div class="review-prose-answer max-w-none flex-1 overflow-y-auto pr-1 review-scroll" :style="questionTextStyle" v-html="answerHtml"></div>
+              </div>
+              <!-- 底部来源链接 -->
+              <div v-if="currentCard.source" class="shrink-0 flex items-center gap-1.5 px-6 pb-3 pt-1 text-[11px] review-card-footer">
+                <Link :size="11" class="review-card-footer-icon shrink-0" />
+                <a :href="currentCard.source" target="_blank" @click.stop class="review-card-footer-link truncate">{{ displaySource }}</a>
               </div>
             </div>
           </div>
 
-          <div
-            :class="[
-              'absolute inset-0 w-full h-full bg-slate-900/60 border border-slate-800/80 rounded-[10px] pointer-events-none transition-all duration-300 shadow-xl z-20',
-              shadow1Class,
-            ]"
-          />
-          <div
-            :class="[
-              'absolute inset-0 w-full h-full bg-slate-900/30 border border-slate-800/40 rounded-[10px] pointer-events-none transition-all duration-300 z-10',
-              shadow2Class,
-            ]"
-          />
+          <!-- 卡片层叠阴影 -->
+          <div :class="['absolute inset-0 w-full h-full review-card-shadow rounded-xl pointer-events-none transition-all duration-300 z-20', shadow1Class]" />
+          <div :class="['absolute inset-0 w-full h-full review-card-shadow-ghost rounded-xl pointer-events-none transition-all duration-300 z-10', shadow2Class]" />
 
-          <!-- Drag resize handle -->
           <div class="review-resize-handle" @mousedown.stop="startResize"></div>
         </div>
 
-        <!-- Article Card (no flip, scrollable) -->
+        <!-- 文章卡 -->
         <div v-else-if="!isComplete && isArticleCard" class="relative" :style="cardSize">
-          <div
-            :class="[
-              'absolute inset-0 bg-slate-900 border border-slate-800 rounded-[10px] p-6 shadow-2xl shadow-black/80 flex flex-col border-t-5 transition-transform duration-500',
-              slideDirection,
-            ]"
-            :style="currentCard.iconColor ? { borderTopColor: currentCard.iconColor } : {}"
-          >
-            <div class="flex justify-between items-center text-xs text-slate-500 mb-4 shrink-0">
-              <span class="flex items-center gap-1"><FileText :size="14" class="text-amber-400" /> {{ currentCard.tag || '#未归类' }}</span>
-              <span v-if="currentCard.source" class="text-slate-400 flex items-center gap-1"><Link :size="12" /> {{ displaySource }}</span>
+          <div :class="['absolute inset-0 review-card-front rounded-xl flex flex-col overflow-hidden transition-transform duration-500', slideDirection]">
+            <!-- 顶部渐变条 + 分类徽章 -->
+            <div class="shrink-0 relative" :style="cardGradientStyle">
+              <span class="review-category-badge" :style="{ backgroundColor: cardCategoryInfo.color }">
+                {{ cardCategoryInfo.name }}
+              </span>
             </div>
-            <div class="prose prose-slate prose-invert max-w-none text-sm leading-relaxed overflow-y-auto flex-1 pr-2 review-scroll" v-html="articleHtml"></div>
+            <!-- 卡片内容 -->
+            <div class="flex-1 flex flex-col overflow-hidden px-6 pt-3 pb-4">
+              <div class="review-prose max-w-none text-sm leading-relaxed overflow-y-auto flex-1 pr-2 review-scroll" v-html="articleHtml"></div>
+            </div>
+            <!-- 底部来源链接 -->
+            <div v-if="currentCard.source" class="shrink-0 flex items-center gap-1.5 px-6 pb-3 pt-1 text-[11px] review-card-footer">
+              <Link :size="11" class="review-card-footer-icon shrink-0" />
+              <a :href="currentCard.source" target="_blank" class="review-card-footer-link truncate">{{ displaySource }}</a>
+            </div>
           </div>
-
-          <!-- Drag resize handle -->
           <div class="review-resize-handle" @mousedown.stop="startResize"></div>
         </div>
 
+        <!-- 完成态 -->
         <div v-else class="relative w-[440px] h-[300px]">
-          <div class="absolute inset-0 bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl flex flex-col items-center justify-center p-8 text-center">
-            <div class="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mb-4">
+          <div class="absolute inset-0 review-complete-bg rounded-3xl flex flex-col items-center justify-center p-8 text-center">
+            <div class="w-14 h-14 rounded-full flex items-center justify-center mb-4 review-complete-icon">
               <PartyPopper :size="28" />
             </div>
-            <h3 class="text-lg font-bold text-white">太棒了！今日复习已全部完成</h3>
-            <p class="text-xs text-slate-500 mt-2">共复习 {{ sessionDeck.length }} 张卡片，知识已入库。<template v-if="nextDueInfo">下一批卡片 {{ nextDueInfo }} 到达。</template></p>
+            <h3 class="text-lg font-bold review-complete-title">太棒了！今日复习已全部完成</h3>
+            <p class="text-xs mt-2 review-complete-desc">共复习 {{ sessionDeck.length }} 张卡片，知识已入库。<template v-if="nextDueInfo">下一批卡片 {{ nextDueInfo }} 到达。</template></p>
           </div>
         </div>
 
-        <div
-          v-if="!isComplete"
-          :class="[
-            'mt-14 flex items-center gap-6 z-10 transition-all duration-300',
-            { 'opacity-0 pointer-events-none': isComplete },
-          ]"
-        >
-          <button
-            @click="handleCardReview('left')"
-            class="group flex flex-col items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 px-8 py-3.5 rounded-2xl transition-all shadow-lg hover:shadow-rose-950/20 active:scale-95"
-          >
-            <div class="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+        <!-- 评分按钮组 -->
+        <div v-if="!isComplete"
+          :class="['mt-8 flex items-center gap-6 z-10 transition-all duration-300', { 'opacity-0 pointer-events-none': isComplete }]">
+          <button @click="handleCardReview('left')" class="review-rate-btn review-rate-forget">
+            <div class="review-rate-icon review-rate-icon-forget">
               <X :size="24" />
             </div>
-            <span class="text-xs font-bold text-rose-400 tracking-wider">没记住 (1)</span>
-            <span class="text-[10px] text-rose-600 font-medium">{{ forgetLabel }}</span>
+            <span class="text-xs font-bold tracking-wider">没记住 (1)</span>
+            <span class="text-[10px] font-medium review-rate-label">{{ forgetLabel }}</span>
           </button>
-
-          <button
-            @click="handleCardReview('right')"
-            class="group flex flex-col items-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/60 px-8 py-3.5 rounded-2xl transition-all shadow-lg hover:shadow-emerald-950/20 active:scale-95"
-          >
-            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+          <button @click="handleCardReview('right')" class="review-rate-btn review-rate-master">
+            <div class="review-rate-icon review-rate-icon-master">
               <Check :size="24" />
             </div>
-            <span class="text-xs font-bold text-emerald-400 tracking-wider">已掌握 (2)</span>
-            <span class="text-[10px] text-emerald-600 font-medium">{{ masterLabel }}</span>
+            <span class="text-xs font-bold tracking-wider">已掌握 (2)</span>
+            <span class="text-[10px] font-medium review-rate-label">{{ masterLabel }}</span>
           </button>
+        </div>
+
+        <!-- 艾宾浩斯 & 翻转提示（卡片外 — 按钮下方） -->
+        <div v-if="!isComplete && !isArticleCard" class="flex flex-col items-center gap-1.5 mt-4 z-10">
+          <div v-if="showEbbinghaus" class="text-xs font-medium flex items-center gap-1.5 px-3 py-1 rounded-full review-ebbinghaus-strip"
+            :style="ebbinghausColorStyle">
+            <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: ebbinghausColorStyle.color }"></span>
+            艾宾浩斯判定：{{ ebbinghausStatus.text }}
+          </div>
+          <div v-if="!isFlipped" class="text-[11px] review-flip-hint-out flex items-center gap-1">
+            <Lightbulb :size="11" /> 点击卡片或按 <span class="font-semibold" :style="{ color: ebbinghausColorStyle.color }">空格键</span> 揭晓答案
+          </div>
         </div>
 
       </main>
     </div>
 
+    <!-- ===== 重置确认弹窗 ===== -->
     <Transition name="reset-fade">
-      <div
-        v-if="showResetConfirm"
-        class="fixed inset-0 z-[9999] flex items-center justify-center"
-        @click.self="showResetConfirm = false"
-      >
-        <div class="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-2xl w-[360px]">
+      <div v-if="showResetConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center" @click.self="showResetConfirm = false">
+        <div class="review-dialog rounded-2xl p-6 shadow-2xl w-[360px]">
           <div class="flex items-center gap-3 mb-4">
             <div class="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center shrink-0">
               <AlertTriangle :size="20" class="text-rose-400" />
             </div>
             <div>
-              <h3 class="text-sm font-bold text-white">重置学习进度</h3>
-              <p class="text-xs text-slate-400 mt-0.5">此操作不可撤销</p>
+              <h3 class="text-sm font-bold review-dialog-title">重置学习进度</h3>
+              <p class="text-xs mt-0.5 review-dialog-desc">此操作不可撤销</p>
             </div>
           </div>
-          <p class="text-xs text-slate-300 leading-relaxed mb-5">
+          <p class="text-xs leading-relaxed mb-5 review-dialog-body">
             将重置当前分类下全部 <span class="text-rose-400 font-bold">{{ sessionDeck.length }}</span> 张卡片的学习进度（复习次数、间隔、难度系数），所有卡片将变为新卡片状态重新开始。
           </p>
           <div class="flex gap-2 justify-end">
-            <button
-              @click="showResetConfirm = false"
-              class="px-4 py-2 text-xs font-medium text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              取消
-            </button>
-            <button
-              @click.stop="confirmResetProgress"
-              class="px-4 py-2 text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-colors"
-            >
-              确认重置
-            </button>
+            <button @click="showResetConfirm = false" class="px-4 py-2 text-xs font-medium rounded-lg transition-colors review-dialog-cancel">取消</button>
+            <button @click.stop="confirmResetProgress" class="px-4 py-2 text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-colors">确认重置</button>
           </div>
         </div>
       </div>
@@ -347,7 +289,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Marked } from 'marked'
-import { ArrowLeft, HelpCircle, CheckCircle2, Link, X, Check, PartyPopper, Zap, Lightbulb, Timer, RotateCcw, Play, Pause, PanelLeftClose, PanelLeftOpen, ChevronRight, Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal, Layers, FileText, AlertTriangle } from 'lucide-vue-next'
+import { ArrowLeft, HelpCircle, Link, X, Check, PartyPopper, Zap, Lightbulb, Timer, RotateCcw, Play, Pause, PanelLeftClose, PanelLeftOpen, ChevronRight, Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal, Layers, AlertTriangle } from 'lucide-vue-next'
 import { useCardStore } from '../composables/useCardStore'
 import { useSettings } from '../composables/useSettings'
 import { db } from '../db'
@@ -357,9 +299,26 @@ const markedInstance = new Marked({ breaks: true, gfm: true })
 
 const iconComponents = { Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal }
 
+function hexToRgba(hex, alpha) {
+  if (!hex || hex.length < 7) return `rgba(100,116,139,${alpha})`
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 const router = useRouter()
 const { reviewDeck, categories, allCards, initDesktop, updateCard, reviewCard, loadAllCards } = useCardStore()
 const { settings } = useSettings()
+
+// ===== 主题 =====
+const reviewThemeClass = computed(() => {
+  const rt = settings.value.reviewTheme || 'system'
+  if (rt === 'light') return 'review-light'
+  if (rt === 'dark') return 'review-dark'
+  // system: 跟随桌面主题
+  return settings.value.theme === 'dark' ? 'review-dark' : 'review-light'
+})
 
 const deck = computed(() => reviewDeck.value.length > 0 ? reviewDeck.value : [])
 
@@ -384,7 +343,14 @@ function switchCategory(catId) {
 }
 
 function startSession() {
-  sessionDeck.value = [...filteredDeck.value]
+  let deck = [...filteredDeck.value]
+  if (shuffleCards.value) {
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]]
+    }
+  }
+  sessionDeck.value = deck
   currentIndex.value = 0
   isFlipped.value = false
   isComplete.value = false
@@ -404,33 +370,20 @@ const slideDirection = ref('')
 const currentTime = ref('')
 const currentDate = ref('')
 const sidebarCollapsed = ref(false)
-const activeCategoryId = ref(null) // null = 全部
-const customWidth = ref(null) // null = use card default
+const activeCategoryId = ref(null)
+const customWidth = ref(null)
 const customHeight = ref(null)
 const showResetConfirm = ref(false)
 const sessionDeck = ref([])
 
-// Pomodoro - 由 usePomodoro 组合式函数管理
 const {
-  POMODORO_TOTAL,
-  pomodoroSeconds,
-  pomodoroRunning,
-  pomodoroDisplay,
-  pomodoroDisplayMini,
-  progressPercent,
-  todayCount,
-  totalCount,
-  totalMinutes,
-  loadStats,
-  togglePomodoro,
-  resetPomodoro,
-  cleanup: cleanupPomodoro,
+  pomodoroTotal, pomodoroSeconds, pomodoroRunning, pomodoroDisplay, pomodoroDisplayMini,
+  progressPercent, todayCount, totalCount, totalMinutes, loadStats,
+  togglePomodoro, resetPomodoro, cleanup: cleanupPomodoro,
 } = usePomodoro()
 
-// Card groups by category (sidebar: always show all categories from full deck)
 const cardGroups = computed(() => {
   const groupMap = new Map()
-
   for (const card of deck.value) {
     const catId = card.categoryId || 'default'
     if (!groupMap.has(catId)) {
@@ -445,7 +398,6 @@ const cardGroups = computed(() => {
     }
     groupMap.get(catId).remaining++
   }
-
   return Array.from(groupMap.values())
 })
 
@@ -456,22 +408,35 @@ const currentCard = computed(() => {
   return { q: '', a: '', tag: '', source: '', border: '', type: 'qa', iconColor: '', windowWidth: 0, windowHeight: 0 }
 })
 
-const isArticleCard = computed(() => {
-  return currentCard.value.type === 'article'
+const cardCategoryInfo = computed(() => {
+  const card = currentCard.value
+  const color = card.iconColor || '#64748b'
+  const cat = categories.value.find(c => c.id === card.categoryId)
+  const name = cat?.name || card.tag || '未分类'
+  return { color, name }
 })
+
+const cardGradientStyle = computed(() => {
+  const color = cardCategoryInfo.value.color
+  return {
+    height: '40px',
+    background: `linear-gradient(to bottom, ${hexToRgba(color, 0.32)}, ${hexToRgba(color, 0.08)}, transparent 80%)`,
+  }
+})
+
+const questionTextStyle = computed(() => ({
+  '--ctg-color': cardCategoryInfo.value.color,
+}))
+
+const isArticleCard = computed(() => currentCard.value.type === 'article')
 
 const articleHtml = computed(() => {
   if (!isArticleCard.value) return ''
   return markedInstance.parse(currentCard.value.q || '')
 })
 
-const questionHtml = computed(() => {
-  return markedInstance.parse(currentCard.value.q || '')
-})
-
-const answerHtml = computed(() => {
-  return markedInstance.parse(currentCard.value.a || '未设置答案')
-})
+const questionHtml = computed(() => markedInstance.parse(currentCard.value.q || ''))
+const answerHtml = computed(() => markedInstance.parse(currentCard.value.a || '未设置答案'))
 
 const cardSize = computed(() => {
   const w = customWidth.value || currentCard.value.windowWidth || (isArticleCard.value ? 350 : 310)
@@ -479,7 +444,6 @@ const cardSize = computed(() => {
   return { width: `${w}px`, height: `${h}px` }
 })
 
-// 翻转动画样式（连接设置）
 const flipContainerClass = computed(() => {
   if (!settings.value.flip3d) return ''
   return isFlipped.value ? 'rotate-y-180' : ''
@@ -512,7 +476,6 @@ const displaySource = computed(() => {
   }
 })
 
-// 艾宾浩斯判定状态
 const ebbinghausStatus = computed(() => {
   const card = currentCard.value
   if (card.reviewCount === 0 && card.nextReviewAt === 0) return { text: '新卡片', type: 'new' }
@@ -524,22 +487,30 @@ const ebbinghausStatus = computed(() => {
   return { text: `${days}天后到期`, type: 'pending' }
 })
 
-const ebbinghausColorClass = computed(() => {
-  const status = ebbinghausStatus.value
-  if (status.type === 'new') return 'text-blue-400'
-  if (status.type === 'overdue') return 'text-rose-400'
-  if (status.type === 'today') return 'text-amber-400'
-  return 'text-emerald-400'
+const ebbinghausColorStyle = computed(() => {
+  const type = ebbinghausStatus.value.type
+  const colors = {
+    new: '#60a5fa',      // blue-400
+    overdue: '#f87171',  // rose-400
+    today: '#fbbf24',    // amber-400
+    pending: '#34d399',  // emerald-400
+  }
+  const color = colors[type] || '#94a3b8'
+  return {
+    backgroundColor: hexToRgba(color, 0.1),
+    color: color,
+    borderColor: hexToRgba(color, 0.25),
+  }
 })
 
-// 评分按钮动态文本
-const forgetLabel = computed(() => {
-  return '10分钟后重现'
-})
+const autoNextCard = computed(() => settings.value.autoNextCard ?? true)
+const showEbbinghaus = computed(() => settings.value.showEbbinghaus ?? true)
+const shuffleCards = computed(() => settings.value.shuffleCards ?? false)
+
+const forgetLabel = computed(() => '10分钟后重现')
 
 const masterLabel = computed(() => {
   const card = currentCard.value
-  // 模拟计算下次间隔
   let interval
   if (card.reviewCount === 0) interval = 1
   else if (card.reviewCount === 1) interval = 6
@@ -548,7 +519,6 @@ const masterLabel = computed(() => {
   return `${interval}天后再次复习`
 })
 
-// 下一张待复习卡片的倒计时
 const nextDueInfo = computed(() => {
   const now = Date.now()
   const upcoming = allCards.value
@@ -566,15 +536,11 @@ const nextDueInfo = computed(() => {
 })
 
 const shadow1Class = computed(() => {
-  return currentIndex.value > 0
-    ? 'translate-y-0 scale-100'
-    : 'translate-y-3 scale-96'
+  return currentIndex.value > 0 ? 'translate-y-0 scale-100' : 'translate-y-3 scale-96'
 })
 
 const shadow2Class = computed(() => {
-  if (currentIndex.value >= sessionDeck.value.length - 1) {
-    return 'opacity-0 translate-y-6 scale-92'
-  }
+  if (currentIndex.value >= sessionDeck.value.length - 1) return 'opacity-0 translate-y-6 scale-92'
   return 'translate-y-6 scale-92'
 })
 
@@ -594,12 +560,8 @@ function startResize(e) {
   function onMouseUp() {
     document.removeEventListener('mousemove', onMouseMove)
     document.removeEventListener('mouseup', onMouseUp)
-    // Sync to database
     if (currentCard.value.id && customWidth.value && customHeight.value) {
-      updateCard(currentCard.value.id, {
-        windowWidth: customWidth.value,
-        windowHeight: customHeight.value,
-      })
+      updateCard(currentCard.value.id, { windowWidth: customWidth.value, windowHeight: customHeight.value })
     }
   }
 
@@ -610,22 +572,28 @@ function startResize(e) {
 function flipCurrentCard() {
   if (isComplete.value || isArticleCard.value) return
   isFlipped.value = !isFlipped.value
+  if (isFlipped.value && autoNextCard.value && !isArticleCard.value) {
+    clearAutoAdvance()
+    autoAdvanceTimer = setTimeout(() => {
+      if (isFlipped.value && !isComplete.value) handleCardReview('right')
+    }, 3000)
+  } else if (!isFlipped.value) {
+    clearAutoAdvance()
+  }
+}
+
+let autoAdvanceTimer = null
+function clearAutoAdvance() {
+  if (autoAdvanceTimer) { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null }
 }
 
 function handleCardReview(direction) {
   if (isComplete.value) return
-
   const quality = direction === 'left' ? 0 : 1
-
-  if (currentCard.value.id) {
-    reviewCard(currentCard.value.id, quality)
-  }
-
+  if (currentCard.value.id) reviewCard(currentCard.value.id, quality)
   slideDirection.value = direction === 'left' ? 'slide-left' : 'slide-right'
-
   setTimeout(() => {
     currentIndex.value++
-
     if (currentIndex.value < sessionDeck.value.length) {
       isFlipped.value = false
       slideDirection.value = ''
@@ -643,15 +611,9 @@ async function confirmResetProgress() {
     : allCards.value.filter(c => (c.categoryId || 'default') === activeCategoryId.value && (c.type === 'qa' || c.type === 'article'))
   const targetIds = targetCards.map(c => c.id).filter(Boolean)
   if (targetIds.length > 0) {
-    await db.cards
-      .where('id')
-      .anyOf(targetIds.map(Number))
-      .modify({
-        reviewCount: 0,
-        interval: 0,
-        easeFactor: 2.5,
-        nextReviewAt: 0,
-      })
+    await db.cards.where('id').anyOf(targetIds.map(Number)).modify({
+      reviewCount: 0, interval: 0, easeFactor: 2.5, nextReviewAt: 0,
+    })
     await loadAllCards()
   }
   showResetConfirm.value = false
@@ -660,15 +622,9 @@ async function confirmResetProgress() {
 
 function handleKeydown(e) {
   if (isComplete.value) return
-
-  if (e.code === 'Space') {
-    e.preventDefault()
-    if (!isArticleCard.value) flipCurrentCard()
-  } else if (e.key === '1') {
-    handleCardReview('left')
-  } else if (e.key === '2') {
-    handleCardReview('right')
-  }
+  if (e.code === 'Space') { e.preventDefault(); if (!isArticleCard.value) flipCurrentCard() }
+  else if (e.key === '1') handleCardReview('left')
+  else if (e.key === '2') handleCardReview('right')
 }
 
 function updateTime() {
@@ -689,10 +645,7 @@ onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
   await initDesktop()
   await loadStats()
-  if (deck.value.length === 0) {
-    isComplete.value = true
-    return
-  }
+  if (deck.value.length === 0) { isComplete.value = true; return }
   startSession()
 })
 
@@ -704,156 +657,569 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.macos-menubar {
-  background: rgba(30, 30, 30, 0.75);
+/* ================================================================
+   REVIEW PAGE — macOS 拟物化设计系统
+   两种主题：.review-light  /  .review-dark
+   ================================================================ */
+
+/* ----- 公共变量 ----- */
+.review-page {
+  --review-accent: #6366f1;
+  --review-accent-hover: #4f46e5;
+  --review-accent-soft: rgba(99, 102, 241, 0.1);
+  --review-radius: 14px;
+  --review-transition: 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ============ 浅色主题 ============ */
+.review-light {
+  --review-bg: #f1f5f9;
+  --review-bg-dot: #cbd5e1;
+  /* 顶栏 */
+  --review-menubar-bg: rgba(255, 255, 255, 0.55);
+  --review-menubar-border: rgba(0, 0, 0, 0.08);
+  --review-menubar-text: #334155;
+  --review-menubar-muted: #64748b;
+  --review-menubar-link: #64748b;
+  --review-menubar-link-hover: #1e293b;
+  /* 侧边栏 */
+  --review-sidebar-bg: rgba(255, 255, 255, 0.35);
+  --review-sidebar-border: rgba(0, 0, 0, 0.06);
+  --review-sidebar-hd-border: rgba(0, 0, 0, 0.05);
+  --review-sidebar-title: #94a3b8;
+  --review-sidebar-toggle: #94a3b8;
+  --review-sidebar-toggle-hover-bg: rgba(0, 0, 0, 0.06);
+  --review-sidebar-toggle-hover-text: #475569;
+  --review-sidebar-mini-bg: #94a3b8;
+  /* 牌组项 */
+  --review-deck-bg: rgba(255, 255, 255, 0.4);
+  --review-deck-border: rgba(0, 0, 0, 0.05);
+  --review-deck-hover-bg: rgba(255, 255, 255, 0.7);
+  --review-deck-active-bg: rgba(99, 102, 241, 0.06);
+  --review-deck-active-border: rgba(99, 102, 241, 0.2);
+  --review-deck-name: #1e293b;
+  --review-deck-meta: #94a3b8;
+  --review-deck-arrow: #cbd5e1;
+  /* 番茄钟 */
+  --review-pomodoro-section-border: rgba(0, 0, 0, 0.05);
+  --review-pomodoro-card-bg: rgba(255, 255, 255, 0.5);
+  --review-pomodoro-card-border: rgba(0, 0, 0, 0.05);
+  --review-pomodoro-hd: #475569;
+  --review-pomodoro-stats: #94a3b8;
+  --review-pomodoro-time: #334155;
+  --review-pomodoro-start-bg: #6366f1;
+  --review-pomodoro-start-text: #fff;
+  --review-pomodoro-start-hover: #4f46e5;
+  --review-pomodoro-reset-bg: #f1f5f9;
+  --review-pomodoro-reset-text: #94a3b8;
+  --review-pomodoro-reset-hover-bg: #e2e8f0;
+  --review-pomodoro-reset-hover-text: #64748b;
+  --review-progress-track: #e2e8f0;
+  --review-progress-idle: #cbd5e1;
+  /* 卡片正面 */
+  --review-card-front-bg: #ffffff;
+  --review-card-front-border: rgba(0, 0, 0, 0.06);
+  --review-card-front-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.05), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);
+  --review-card-front-shadow-hover: 0 1px 3px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.06), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);
+  --review-card-meta: #94a3b8;
+  /* 卡片背面 */
+  --review-card-back-bg: #1a2332;
+  --review-card-back-border: rgba(0, 0, 0, 0.15);
+  --review-card-back-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.2);
+  --review-card-back-meta: #788296;
+  --review-flip-hint: #94a3b8;
+  /* 卡片阴影 */
+  --review-card-shadow-bg: rgba(255,255,255,0.4);
+  --review-card-shadow-border: rgba(0,0,0,0.04);
+  --review-card-shadow-ghost-bg: rgba(255,255,255,0.2);
+  /* 评分按钮 */
+  --review-rate-forget-bg: rgba(255,255,255,0.5);
+  --review-rate-forget-border: rgba(239,68,68,0.15);
+  --review-rate-forget-hover-bg: rgba(239,68,68,0.06);
+  --review-rate-forget-hover-border: rgba(239,68,68,0.3);
+  --review-rate-master-bg: rgba(255,255,255,0.5);
+  --review-rate-master-border: rgba(16,185,129,0.15);
+  --review-rate-master-hover-bg: rgba(16,185,129,0.06);
+  --review-rate-master-hover-border: rgba(16,185,129,0.3);
+  --review-rate-label: #94a3b8;
+  /* 完成态 */
+  --review-complete-bg: rgba(255,255,255,0.4);
+  --review-complete-border: rgba(0,0,0,0.04);
+  --review-complete-icon-bg: rgba(16,185,129,0.08);
+  --review-complete-icon-text: #10b981;
+  --review-complete-title: #1e293b;
+  --review-complete-desc: #94a3b8;
+  /* 弹窗 */
+  --review-dialog-bg: rgba(255,255,255,0.92);
+  --review-dialog-title: #1e293b;
+  --review-dialog-desc: #94a3b8;
+  --review-dialog-body: #475569;
+  --review-dialog-cancel-bg: #f1f5f9;
+  --review-dialog-cancel-text: #64748b;
+  --review-dialog-cancel-hover: #e2e8f0;
+  /* prose 文字 */
+  --review-prose-heading: #1e293b;
+  --review-prose-text: #334155;
+  --review-prose-code-bg: #f1f5f9;
+  --review-prose-code-text: #db2777;
+  --review-prose-pre-bg: #0f172a;
+  --review-prose-pre-text: #f8fafc;
+  --review-prose-strong: #1e293b;
+  --review-prose-blockquote-border: #6366f1;
+  --review-prose-blockquote-bg: #f8fafc;
+  --review-prose-blockquote-text: #475569;
+  --review-prose-answer-heading: #cbd5e1;
+  --review-prose-answer-text: #94a3b8;
+  --review-reset-btn: #94a3b8;
+  --review-reset-btn-hover: #ef4444;
+  --review-kbd-hints: #cbd5e1;
+  --review-kbd-bg: rgba(0,0,0,0.04);
+  --review-kbd-border: rgba(0,0,0,0.06);
+  --review-kbd-text: #64748b;
+}
+
+/* ============ 深色主题 ============ */
+.review-dark {
+  --review-bg: #0b0f19;
+  --review-bg-dot: #1e293b;
+  --review-menubar-bg: rgba(15, 23, 42, 0.65);
+  --review-menubar-border: rgba(255, 255, 255, 0.06);
+  --review-menubar-text: #e2e8f0;
+  --review-menubar-muted: #64748b;
+  --review-menubar-link: rgba(255,255,255,0.4);
+  --review-menubar-link-hover: rgba(255,255,255,0.7);
+  --review-sidebar-bg: rgba(15, 23, 42, 0.45);
+  --review-sidebar-border: rgba(255, 255, 255, 0.06);
+  --review-sidebar-hd-border: rgba(255, 255, 255, 0.06);
+  --review-sidebar-title: #64748b;
+  --review-sidebar-toggle: #475569;
+  --review-sidebar-toggle-hover-bg: rgba(255,255,255,0.08);
+  --review-sidebar-toggle-hover-text: #94a3b8;
+  --review-sidebar-mini-bg: #475569;
+  --review-deck-bg: rgba(30, 41, 59, 0.35);
+  --review-deck-border: rgba(255, 255, 255, 0.05);
+  --review-deck-hover-bg: rgba(51, 65, 85, 0.5);
+  --review-deck-active-bg: rgba(99, 102, 241, 0.1);
+  --review-deck-active-border: rgba(99, 102, 241, 0.3);
+  --review-deck-name: #e2e8f0;
+  --review-deck-meta: #64748b;
+  --review-deck-arrow: #334155;
+  --review-pomodoro-section-border: rgba(255, 255, 255, 0.06);
+  --review-pomodoro-card-bg: rgba(30, 41, 59, 0.5);
+  --review-pomodoro-card-border: rgba(255, 255, 255, 0.05);
+  --review-pomodoro-hd: #94a3b8;
+  --review-pomodoro-stats: #64748b;
+  --review-pomodoro-time: #e2e8f0;
+  --review-pomodoro-start-bg: #6366f1;
+  --review-pomodoro-start-text: #fff;
+  --review-pomodoro-start-hover: #4f46e5;
+  --review-pomodoro-reset-bg: rgba(71, 85, 105, 0.4);
+  --review-pomodoro-reset-text: #64748b;
+  --review-pomodoro-reset-hover-bg: rgba(71, 85, 105, 0.6);
+  --review-pomodoro-reset-hover-text: #94a3b8;
+  --review-progress-track: rgba(255,255,255,0.1);
+  --review-progress-idle: #475569;
+  --review-card-front-bg: #1e293b;
+  --review-card-front-border: rgba(255, 255, 255, 0.06);
+  --review-card-front-shadow: 0 1px 3px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.2);
+  --review-card-front-shadow-hover: 0 1px 3px rgba(0,0,0,0.2), 0 12px 32px rgba(0,0,0,0.3);
+  --review-card-meta: #64748b;
+  --review-card-back-bg: #0f172a;
+  --review-card-back-border: rgba(255, 255, 255, 0.06);
+  --review-card-back-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.3);
+  --review-card-back-meta: #64748b;
+  --review-flip-hint: #64748b;
+  --review-card-shadow-bg: rgba(30,41,59,0.5);
+  --review-card-shadow-border: rgba(255,255,255,0.04);
+  --review-card-shadow-ghost-bg: rgba(30,41,59,0.25);
+  --review-rate-forget-bg: rgba(30,41,59,0.5);
+  --review-rate-forget-border: rgba(239,68,68,0.15);
+  --review-rate-forget-hover-bg: rgba(239,68,68,0.08);
+  --review-rate-forget-hover-border: rgba(239,68,68,0.3);
+  --review-rate-master-bg: rgba(30,41,59,0.5);
+  --review-rate-master-border: rgba(16,185,129,0.15);
+  --review-rate-master-hover-bg: rgba(16,185,129,0.08);
+  --review-rate-master-hover-border: rgba(16,185,129,0.3);
+  --review-rate-label: #64748b;
+  --review-complete-bg: rgba(30,41,59,0.3);
+  --review-complete-border: rgba(255,255,255,0.04);
+  --review-complete-icon-bg: rgba(16,185,129,0.1);
+  --review-complete-icon-text: #10b981;
+  --review-complete-title: #e2e8f0;
+  --review-complete-desc: #64748b;
+  --review-dialog-bg: rgba(15,23,42,0.94);
+  --review-dialog-title: #e2e8f0;
+  --review-dialog-desc: #64748b;
+  --review-dialog-body: #94a3b8;
+  --review-dialog-cancel-bg: #1e293b;
+  --review-dialog-cancel-text: #94a3b8;
+  --review-dialog-cancel-hover: #334155;
+  --review-prose-heading: #f1f5f9;
+  --review-prose-text: #cbd5e1;
+  --review-prose-code-bg: #1e293b;
+  --review-prose-code-text: #f8a0c8;
+  --review-prose-pre-bg: #0f172a;
+  --review-prose-pre-text: #e2e8f0;
+  --review-prose-strong: #f1f5f9;
+  --review-prose-blockquote-border: #6366f1;
+  --review-prose-blockquote-bg: #1e293b;
+  --review-prose-blockquote-text: #94a3b8;
+  --review-prose-answer-heading: #cbd5e1;
+  --review-prose-answer-text: #94a3b8;
+  --review-reset-btn: rgba(255,255,255,0.35);
+  --review-reset-btn-hover: #f87171;
+  --review-kbd-hints: rgba(255,255,255,0.35);
+  --review-kbd-bg: rgba(255,255,255,0.08);
+  --review-kbd-border: rgba(255,255,255,0.08);
+  --review-kbd-text: rgba(255,255,255,0.45);
+}
+
+/* ============ 背景（网点纹理） ============ */
+.review-page {
+  background-color: var(--review-bg);
+  background-image: radial-gradient(var(--review-bg-dot) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ============ 顶栏 — macOS 磨砂玻璃 ============ */
+.review-menubar {
+  background: var(--review-menubar-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 0.5px solid var(--review-menubar-border);
 }
 
-.sidebar-panel {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
+.review-link {
+  color: var(--review-menubar-link);
+  transition: color var(--review-transition);
 }
+.review-link:hover { color: var(--review-menubar-link-hover); }
 
-/* Markdown prose styles (dark theme) */
-.prose :deep(h1) {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 1rem;
+.review-title { color: var(--review-menubar-text); }
+.review-counter { color: var(--review-menubar-muted); }
+.review-clock { color: var(--review-menubar-text); }
+
+.review-reset-btn {
+  color: var(--review-reset-btn);
+  transition: color var(--review-transition);
 }
+.review-reset-btn:hover { color: var(--review-reset-btn-hover); }
 
-.prose :deep(h2) {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #f1f5f9;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.prose :deep(p) {
-  font-size: 1rem;
-  color: var(--category-color, #cbd5e1);
-  line-height: 1.7;
-  margin-bottom: 1rem;
-}
-
-.prose :deep(code) {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.15rem 0.4rem;
+.review-kbd-hints { color: var(--review-kbd-hints); }
+.review-kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--review-kbd-bg);
+  border: 1px solid var(--review-kbd-border);
   border-radius: 4px;
-  font-size: 0.875rem;
-  color: var(--category-color, #cbd5e1);
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--review-kbd-text);
 }
 
-.prose :deep(pre) {
-  background: rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
-  padding: 1rem;
-  border-radius: 8px;
-  overflow-x: auto;
+/* ============ 侧边栏 ============ */
+.review-sidebar {
+  background: var(--review-sidebar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--review-sidebar-border);
 }
 
-.prose :deep(ul), .prose :deep(ol) {
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
-  color: var(--category-color, #cbd5e1);
+.review-sidebar-hd { border-color: var(--review-sidebar-hd-border); }
+
+.review-sidebar-title {
+  color: var(--review-sidebar-title);
+  letter-spacing: 0.05em;
 }
 
-.prose :deep(strong) {
-  color: #f1f5f9;
+.review-sidebar-toggle {
+  color: var(--review-sidebar-toggle);
+  transition: all var(--review-transition);
+}
+.review-sidebar-toggle:hover {
+  background: var(--review-sidebar-toggle-hover-bg);
+  color: var(--review-sidebar-toggle-hover-text);
 }
 
-/* Answer side styles */
-.prose-answer :deep(p) {
-  color: #94a3b8;
-  line-height: 1.7;
-  margin-bottom: 0.5rem;
+/* 牌组项 */
+.review-deck-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--review-deck-bg);
+  border: 1px solid var(--review-deck-border);
+  border-radius: var(--review-radius);
+  cursor: pointer;
+  transition: all var(--review-transition);
+}
+.review-deck-item:hover { background: var(--review-deck-hover-bg); }
+.review-deck-active {
+  background: var(--review-deck-active-bg);
+  border-color: var(--review-deck-active-border);
 }
 
-.prose-answer :deep(h1),
-.prose-answer :deep(h2),
-.prose-answer :deep(h3) {
-  color: #cbd5e1;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+.review-deck-name { color: var(--review-deck-name); }
+.review-deck-meta { color: var(--review-deck-meta); }
+.review-deck-arrow { color: var(--review-deck-arrow); }
+
+/* 番茄钟 */
+.review-pomodoro-section { border-color: var(--review-pomodoro-section-border); }
+.review-pomodoro-card {
+  background: var(--review-pomodoro-card-bg);
+  border-color: var(--review-pomodoro-card-border);
+}
+.review-pomodoro-hd { color: var(--review-pomodoro-hd); }
+.review-pomodoro-stats { color: var(--review-pomodoro-stats); }
+.review-pomodoro-time { color: var(--review-pomodoro-time); }
+
+.review-pomodoro-start {
+  background: var(--review-pomodoro-start-bg);
+  color: var(--review-pomodoro-start-text);
+}
+.review-pomodoro-start:hover { background: var(--review-pomodoro-start-hover); }
+
+.review-pomodoro-reset {
+  background: var(--review-pomodoro-reset-bg);
+  color: var(--review-pomodoro-reset-text);
+}
+.review-pomodoro-reset:hover {
+  background: var(--review-pomodoro-reset-hover-bg);
+  color: var(--review-pomodoro-reset-hover-text);
 }
 
-.prose-answer :deep(ul),
-.prose-answer :deep(ol) {
-  padding-left: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: #94a3b8;
+.review-progress-track { background: var(--review-progress-track); }
+.review-progress-idle { background: var(--review-progress-idle); }
+
+/* ============ 卡片正面 — 纸质感 ============ */
+.review-card-front {
+  background: var(--review-card-front-bg);
+  border: 1px solid var(--review-card-front-border);
+  box-shadow: var(--review-card-front-shadow);
+  transition: box-shadow 0.3s ease;
+}
+.review-card-front:hover {
+  box-shadow: var(--review-card-front-shadow-hover);
 }
 
-.prose-answer :deep(code) {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: #cbd5e1;
+.review-card-meta { color: var(--review-card-meta); }
+
+/* 分类徽章 — 浮动 pill badge */
+.review-category-badge {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  z-index: 10;
+  letter-spacing: 0.02em;
 }
 
-.prose-answer :deep(pre) {
-  background: rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
-  padding: 1rem;
-  border-radius: 8px;
-  overflow-x: auto;
+/* 卡片外 — 艾宾浩斯状态条 */
+.review-ebbinghaus-strip {
+  border: 1px solid;
 }
 
-.prose-answer :deep(strong) {
-  color: #cbd5e1;
+/* 卡片外 — 翻转提示 */
+.review-flip-hint-out { color: var(--review-flip-hint); }
+
+/* 卡片底部来源链接 */
+.review-card-footer-icon {
+  opacity: 0.45;
+  color: var(--review-card-meta);
+}
+.review-card-footer-link {
+  opacity: 0.55;
+  color: var(--review-card-meta);
+  text-decoration: none;
+  transition: opacity var(--review-transition);
+}
+.review-card-footer-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
 }
 
-/* Scrollbar styles */
-.review-scroll::-webkit-scrollbar {
-  width: 5px;
+/* 卡片背面 — 深色恒定 */
+.review-card-back {
+  background: #1a2332;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.3);
+}
+.review-card-back-meta { color: #788296; }
+
+/* 卡片层叠阴影 */
+.review-card-shadow {
+  background: var(--review-card-shadow-bg);
+  border: 1px solid var(--review-card-shadow-border);
+}
+.review-card-shadow-ghost {
+  background: var(--review-card-shadow-ghost-bg);
+  border: 1px solid var(--review-card-shadow-border);
 }
 
-.review-scroll::-webkit-scrollbar-track {
-  background: transparent;
+/* ============ 评分按钮 ============ */
+.review-rate-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 28px;
+  border-radius: 18px;
+  border: 1px solid;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.25s cubic-bezier(0.2,0,0,1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  cursor: pointer;
+}
+.review-rate-btn:active { transform: scale(0.95); }
+
+.review-rate-forget {
+  background: var(--review-rate-forget-bg);
+  border-color: var(--review-rate-forget-border);
+  color: #ef4444;
+}
+.review-rate-forget:hover {
+  background: var(--review-rate-forget-hover-bg);
+  border-color: var(--review-rate-forget-hover-border);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.08);
+  transform: translateY(-2px);
 }
 
+.review-rate-master {
+  background: var(--review-rate-master-bg);
+  border-color: var(--review-rate-master-border);
+  color: #10b981;
+}
+.review-rate-master:hover {
+  background: var(--review-rate-master-hover-bg);
+  border-color: var(--review-rate-master-hover-border);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+  transform: translateY(-2px);
+}
+
+.review-rate-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+.review-rate-btn:hover .review-rate-icon { transform: scale(1.1); }
+
+.review-rate-icon-forget { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.review-rate-icon-master { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+
+.review-rate-label { color: var(--review-rate-label); }
+
+/* ============ 完成态 ============ */
+.review-complete-bg {
+  background: var(--review-complete-bg);
+  border: 1px dashed var(--review-complete-border);
+}
+.review-complete-icon {
+  background: var(--review-complete-icon-bg);
+  color: var(--review-complete-icon-text);
+}
+.review-complete-title { color: var(--review-complete-title); }
+.review-complete-desc { color: var(--review-complete-desc); }
+
+/* ============ 弹窗 ============ */
+.review-dialog {
+  background: var(--review-dialog-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.review-dialog-title { color: var(--review-dialog-title); }
+.review-dialog-desc { color: var(--review-dialog-desc); }
+.review-dialog-body { color: var(--review-dialog-body); }
+.review-dialog-cancel {
+  background: var(--review-dialog-cancel-bg);
+  color: var(--review-dialog-cancel-text);
+}
+.review-dialog-cancel:hover { background: var(--review-dialog-cancel-hover); }
+
+/* ============ Prose / Markdown ============ */
+.review-prose :deep(h1) {
+  font-size: 1.5rem; font-weight: 700; color: var(--ctg-color, var(--review-prose-heading)); margin-bottom: 1rem;
+  border-bottom: 1px solid var(--review-sidebar-hd-border); padding-bottom: 0.5rem;
+}
+.review-prose :deep(h2) {
+  font-size: 1.25rem; font-weight: 600; color: var(--ctg-color, var(--review-prose-heading)); margin-top: 1.5rem; margin-bottom: 0.75rem;
+}
+.review-prose :deep(h3) {
+  font-size: 1.1rem; font-weight: 600; color: var(--ctg-color, var(--review-prose-text)); margin-top: 1.25rem; margin-bottom: 0.5rem;
+}
+.review-prose :deep(p) {
+  font-size: 1rem; color: var(--ctg-color, var(--review-prose-text)); line-height: 1.7; margin-bottom: 1rem;
+}
+.review-prose :deep(ul), .review-prose :deep(ol) {
+  padding-left: 1.5rem; margin-bottom: 1rem; color: var(--ctg-color, var(--review-prose-text));
+}
+.review-prose :deep(li) { margin-bottom: 0.25rem; }
+.review-prose :deep(code) {
+  background: var(--review-prose-code-bg); color: var(--review-prose-code-text);
+  padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.875rem;
+}
+.review-prose :deep(pre) {
+  background: var(--review-prose-pre-bg); color: var(--review-prose-pre-text);
+  padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0;
+}
+.review-prose :deep(pre code) {
+  background: none; color: inherit; padding: 0; font-size: inherit;
+}
+.review-prose :deep(strong) { color: var(--ctg-color, var(--review-prose-strong)); }
+.review-prose :deep(blockquote) {
+  border-left: 4px solid var(--review-prose-blockquote-border);
+  padding-left: 1rem; color: var(--review-prose-blockquote-text);
+  background: var(--review-prose-blockquote-bg);
+  padding: 0.5rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem;
+}
+.review-prose :deep(a) { color: var(--review-accent); text-decoration: underline; }
+
+/* 背面 prose */
+.review-prose-answer :deep(h1),
+.review-prose-answer :deep(h2),
+.review-prose-answer :deep(h3) { color: var(--ctg-color, #cbd5e1); font-weight: 600; margin-bottom: 0.5rem; }
+.review-prose-answer :deep(p) { color: var(--ctg-color, #94a3b8); line-height: 1.7; margin-bottom: 0.5rem; }
+.review-prose-answer :deep(ul),
+.review-prose-answer :deep(ol) { padding-left: 1.5rem; margin-bottom: 0.5rem; color: var(--ctg-color, #94a3b8); }
+.review-prose-answer :deep(code) {
+  background: rgba(255,255,255,0.1); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.875rem; color: #cbd5e1;
+}
+.review-prose-answer :deep(pre) {
+  background: rgba(255,255,255,0.08); color: #94a3b8; padding: 1rem; border-radius: 8px; overflow-x: auto;
+}
+.review-prose-answer :deep(strong) { color: var(--ctg-color, #cbd5e1); }
+
+/* ============ 滚动条 ============ */
+.review-scroll::-webkit-scrollbar { width: 5px; }
+.review-scroll::-webkit-scrollbar-track { background: transparent; }
 .review-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  background: var(--review-card-meta); opacity: 0.3; border-radius: 10px;
 }
 
-.review-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-/* Drag resize handle */
+/* ============ 拖拽把手 ============ */
 .review-resize-handle {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 16px;
-  height: 16px;
-  cursor: nwse-resize;
-  z-index: 40;
+  position: absolute; bottom: 0; right: 0;
+  width: 16px; height: 16px; cursor: nwse-resize; z-index: 40;
 }
-
 .review-resize-handle::before {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  width: 8px;
-  height: 8px;
-  border-right: 1.5px solid rgba(255, 255, 255, 0.25);
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.25);
+  content: ''; position: absolute; bottom: 4px; right: 4px;
+  width: 8px; height: 8px;
+  border-right: 1.5px solid var(--review-card-meta);
+  border-bottom: 1.5px solid var(--review-card-meta);
 }
 
-.reset-fade-enter-active,
-.reset-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.reset-fade-enter-from,
-.reset-fade-leave-to {
-  opacity: 0;
-}
+/* ============ 弹窗过渡动画 ============ */
+.reset-fade-enter-active, .reset-fade-leave-active { transition: opacity 0.2s ease; }
+.reset-fade-enter-from, .reset-fade-leave-to { opacity: 0; }
 </style>
