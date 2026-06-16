@@ -2,7 +2,7 @@
   <div
     ref="sheetRef"
     :style="sheetStyle"
-    class="launcher-sheet overflow-hidden flex flex-col"
+    :class="['launcher-sheet', 'overflow-hidden', 'flex', 'flex-col', shouldUseDarkTheme ? 'app-launcher--dark' : '']"
     @mousedown="bringToFront"
   >
     <div class="sheet-header" @mousedown="startDrag">
@@ -540,6 +540,7 @@ import {
 } from "lucide-vue-next";
 import { useCardStore } from "../composables/useCardStore";
 import { useSheetWindow } from "../composables/useSheetWindow";
+import { useSettings } from "../composables/useSettings";
 
 const emit = defineEmits([
   "close",
@@ -566,6 +567,9 @@ const {
 });
 
 const { categories } = useCardStore();
+const { settings } = useSettings();
+
+const shouldUseDarkTheme = computed(() => settings.value.theme === 'dark');
 
 const activeTab = ref("app");
 const showCategoryDropdown = ref(false);
@@ -1565,5 +1569,82 @@ function handleCreate() {
 }
 .cat-dropdown::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.25);
+}
+
+/* ===== 暗色模式覆盖 ===== */
+.app-launcher--dark .sheet-header,
+.app-launcher--dark .sheet-body,
+.app-launcher--dark .sheet-footer {
+  background: var(--panel-bg);
+}
+
+.app-launcher--dark .sheet-title-text h2 {
+  color: #e2e8f0;
+}
+
+.app-launcher--dark .sheet-title-text span {
+  color: #94a3b8;
+}
+
+.app-launcher--dark .sheet-close {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+.app-launcher--dark .sheet-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+.app-launcher--dark .type-label {
+  color: #e2e8f0;
+}
+
+.app-launcher--dark .form-label {
+  color: #cbd5e1;
+}
+
+.app-launcher--dark .form-input {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+.app-launcher--dark .form-input::placeholder {
+  color: #64748b;
+}
+
+.app-launcher--dark .form-input:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent);
+}
+
+.app-launcher--dark .btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+.app-launcher--dark .btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+}
+
+.app-launcher--dark .hint-text {
+  color: #94a3b8;
+}
+
+.app-launcher--dark .cat-select-label {
+  color: #e2e8f0;
+}
+
+.app-launcher--dark .cat-dropdown {
+  background: var(--contextmenu-bg);
+}
+
+.app-launcher--dark .cat-dropdown-item {
+  color: #cbd5e1;
+}
+
+.app-launcher--dark .cat-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 </style>
