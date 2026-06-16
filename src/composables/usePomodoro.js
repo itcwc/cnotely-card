@@ -1,17 +1,21 @@
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted, watch } from 'vue'
 import { db } from '../db'
+import { useSettings } from './useSettings'
 
-const POMODORO_MINUTES = 25
-const POMODORO_TOTAL = POMODORO_MINUTES * 60
 const STATS_KEY = 'pomodoroStats'
 
 // 全局单例，跨组件共享
-const pomodoroSeconds = ref(POMODORO_TOTAL)
+const pomodoroSeconds = ref(0)
+const pomodoroTotal = ref(25 * 60) // 当前会话总秒数
 const pomodoroRunning = ref(false)
 const todayCount = ref(0)
 const totalCount = ref(0)
 const totalMinutes = ref(0)
 let pomodoroInterval = null
+
+// 从设置读取时长（分钟），返回 ref
+const { settings: pomodoroSettings } = useSettings()
+const focusMinutes = computed(() => pomodoroSettings.value.focusDuration || 25)
 
 function getTodayStr() {
   const now = new Date()
@@ -23,7 +27,6 @@ async function loadStats() {
     const row = await db.settings.get(STATS_KEY)
     if (row) {
       const stats = row.value
-      // 跨天重置今日计数
       if (stats.todayDate !== getTodayStr()) {
         stats.todayCount = 0
         stats.todayDate = getTodayStr()
@@ -38,7 +41,9 @@ async function loadStats() {
       totalMinutes.value = 0
     }
   } catch {
-    // settings 表可能还未创建，忽略
+    todayCount.value = 0
+    totalCount.value = 0
+    totalMinutes.value = 0
   }
 }
 
@@ -60,7 +65,7 @@ async function saveStats() {
 function completeSession() {
   todayCount.value++
   totalCount.value++
-  totalMinutes.value += POMODORO_MINUTES
+  totalMinutes.value += Math.round(pomodoroTotal.value / 60)
   saveStats()
 }
 
@@ -82,8 +87,10 @@ function togglePomodoro() {
     pomodoroInterval = null
     pomodoroRunning.value = false
   } else {
+    // 开始新会话，从设置读取时长
     if (pomodoroSeconds.value <= 0) {
-      pomodoroSeconds.value = POMODORO_TOTAL
+      pomodoroTotal.value = focusMinutes.value * 60
+      pomodoroSeconds.value = pomodoroTotal.value
     }
     pomodoroRunning.value = true
     pomodoroInterval = setInterval(tick, 1000)
@@ -94,7 +101,8 @@ function resetPomodoro() {
   clearInterval(pomodoroInterval)
   pomodoroInterval = null
   pomodoroRunning.value = false
-  pomodoroSeconds.value = POMODORO_TOTAL
+  pomodoroTotal.value = focusMinutes.value * 60
+  pomodoroSeconds.value = pomodoroTotal.value
 }
 
 function cleanup() {
@@ -115,13 +123,15 @@ const pomodoroDisplayMini = computed(() => {
 })
 
 const progressPercent = computed(() => {
-  return Math.round(((POMODORO_TOTAL - pomodoroSeconds.value) / POMODORO_TOTAL) * 100)
+  if (pomodoroTotal.value === 0) return 0
+  return Math.round(((pomodoroTotal.value - pomodoroSeconds.value) / pomodoroTotal.value) * 100)
 })
+
+const focusDurationMinutes = computed(() => focusMinutes.value)
 
 export function usePomodoro() {
   return {
-    POMODORO_TOTAL,
-    POMODORO_MINUTES,
+    focusDurationMinutes,
     pomodoroSeconds,
     pomodoroRunning,
     pomodoroDisplay,

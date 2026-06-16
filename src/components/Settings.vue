@@ -36,30 +36,8 @@
           class="sheet-control-btn"
           title="最大化/还原"
         >
-          <svg
-            v-if="!isMaximized"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          >
-            <path
-              d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
-            />
-          </svg>
-          <svg
-            v-else
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          >
-            <path
-              d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"
-            />
-          </svg>
+          <Maximize v-if="!isMaximized" :size="14" />
+          <Minimize2 v-else :size="14" />
         </button>
         <button @click="$emit('close')" class="sheet-close" title="关闭">
           <svg
@@ -92,7 +70,7 @@
           </button>
         </div>
         <div class="mt-auto pt-4 border-t border-black/5 px-3">
-          <p class="text-[10px] text-slate-400">cnotely v0.2.0</p>
+          <p class="text-[10px] text-slate-500">cnotely v0.2.0</p>
         </div>
       </nav>
 
@@ -106,31 +84,39 @@
           </div>
 
           <div class="setting-group-title">壁纸</div>
-          <div class="setting-row">
-            <div>
-              <p class="setting-label">桌面壁纸</p>
-              <p class="setting-desc">选择一张喜欢的背景图</p>
+            <div class="setting-row">
+              <div>
+                <p class="setting-label">桌面壁纸</p>
+                <p class="setting-desc">选择一张喜欢的背景图</p>
+              </div>
+              <div class="flex gap-2 items-center">
+                <img
+                  v-for="(wp, i) in wallpapers"
+                  :key="i"
+                  :src="wp.url"
+                  :title="wp.title"
+                  :class="[
+                    'wallpaper-thumb',
+                    { selected: selectedWallpaper === i },
+                  ]"
+                  @click="selectedWallpaper = i"
+                />
+                <label
+                  class="wallpaper-thumb bg-slate-100 flex items-center justify-center cursor-pointer text-slate-500 font-bold text-lg"
+                  title="自定义上传"
+                  @click="handleCustomWallpaper"
+                >
+                  ＋
+                </label>
+                <input
+                  ref="wallpaperInput"
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="onWallpaperUpload"
+                />
+              </div>
             </div>
-            <div class="flex gap-2">
-              <img
-                v-for="(wp, i) in wallpapers"
-                :key="i"
-                :src="wp.url"
-                :title="wp.title"
-                :class="[
-                  'wallpaper-thumb',
-                  { selected: selectedWallpaper === i },
-                ]"
-                @click="selectedWallpaper = i"
-              />
-              <label
-                class="wallpaper-thumb bg-slate-100 flex items-center justify-center cursor-pointer"
-                title="自定义上传"
-              >
-                <ChevronRight :size="14" class="text-slate-400" />
-              </label>
-            </div>
-          </div>
 
           <div class="setting-group-title">透明度</div>
           <div class="setting-row">
@@ -169,6 +155,24 @@
               <span class="text-xs text-slate-500 font-mono w-10 text-right"
                 >{{ barOpacity }}%</span
               >
+            </div>
+          </div>
+
+          <div class="setting-group-title">主题</div>
+          <div class="setting-row">
+            <div>
+              <p class="setting-label">界面主题</p>
+              <p class="setting-desc">控制弹窗、面板、编辑器的颜色模式</p>
+            </div>
+            <div class="segmented-control">
+              <button
+                v-for="t in ['浅色', '深色']"
+                :key="t"
+                :class="['segmented-btn', { active: globalThemeLabel === t }]"
+                @click="globalTheme = t === '浅色' ? 'light' : 'dark'"
+              >
+                {{ t }}
+              </button>
             </div>
           </div>
 
@@ -219,6 +223,7 @@
               </button>
             </div>
           </div>
+
 
           <div class="setting-group-title">图标网格</div>
           <div class="setting-row">
@@ -320,6 +325,26 @@
               :class="['toggle-switch', { active: flip3d }]"
               @click="flip3d = !flip3d"
             ></div>
+          </div>
+          <div class="setting-row">
+            <div>
+              <p class="setting-label">3D 透视深度</p>
+              <p class="setting-desc">控制 3D 翻转的立体感强度（仅 3D 模式）</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <input
+                type="range"
+                min="400"
+                max="2000"
+                step="100"
+                v-model="flipPerspective"
+                class="range-slider"
+                style="width: 140px"
+              />
+              <span class="text-xs text-slate-500 font-mono w-12 text-right"
+                >{{ flipPerspective }}px</span
+              >
+            </div>
           </div>
 
           <div class="setting-group-title">默认尺寸</div>
@@ -554,17 +579,18 @@
           >
             <div class="flex justify-between items-center mb-3">
               <span class="text-sm font-medium text-slate-600">已用空间</span>
-              <span class="text-sm font-bold text-slate-800">2.4 MB</span>
+              <span class="text-sm font-bold text-slate-800">{{ formatSize(storageStats.estimatedSize) }}</span>
             </div>
             <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
               <div
-                class="h-full w-[8%] bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full"
+                class="h-full bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full"
+                :style="{ width: storageStats.cardCount ? Math.min(100, storageStats.cardCount / 5) + '%' : '2%' }"
               ></div>
             </div>
-            <div class="flex justify-between mt-2 text-[10px] text-slate-400">
-              <span>卡片: 128 张</span>
-              <span>图标: 5 个</span>
-              <span>分类: 4 个</span>
+            <div class="flex justify-between mt-2 text-[10px] text-slate-500">
+              <span>卡片: {{ storageStats.cardCount }} 张</span>
+              <span>图标: {{ storageStats.appCount }} 个</span>
+              <span>分类: {{ storageStats.catCount }} 个</span>
             </div>
           </div>
 
@@ -574,14 +600,14 @@
               <p class="setting-label">导出全部数据</p>
               <p class="setting-desc">将所有卡片、分类、设置导出为 JSON 文件</p>
             </div>
-            <button class="btn-primary">导出</button>
+            <button class="btn-primary" @click="handleExport">导出</button>
           </div>
           <div class="setting-row">
             <div>
               <p class="setting-label">导入数据</p>
               <p class="setting-desc">从 JSON 文件恢复之前导出的数据</p>
             </div>
-            <button class="btn-secondary">导入</button>
+            <button class="btn-secondary" @click="handleImport">导入</button>
           </div>
 
           <div class="setting-group-title">同步</div>
@@ -620,7 +646,7 @@
               C
             </div>
             <h3 class="text-xl font-bold text-slate-800">cnotely</h3>
-            <p class="text-sm text-slate-400 mt-1">
+            <p class="text-sm text-slate-500 mt-1">
               闪记便笺工作台 · 版本 0.2.0
             </p>
             <p
@@ -631,16 +657,16 @@
             </p>
             <div class="grid grid-cols-3 gap-8 mt-8 text-center">
               <div>
-                <p class="text-2xl font-bold text-blue-500">128</p>
-                <p class="text-[11px] text-slate-400 mt-1">张卡片</p>
+                <p class="text-2xl font-bold text-blue-500">{{ storageStats.cardCount }}</p>
+                <p class="text-[11px] text-slate-500 mt-1">张卡片</p>
               </div>
               <div>
-                <p class="text-2xl font-bold text-emerald-500">86</p>
-                <p class="text-[11px] text-slate-400 mt-1">次复习</p>
+                <p class="text-2xl font-bold text-emerald-500">{{ storageStats.totalCompletions }}</p>
+                <p class="text-[11px] text-slate-500 mt-1">次复习</p>
               </div>
               <div>
-                <p class="text-2xl font-bold text-amber-500">12</p>
-                <p class="text-[11px] text-slate-400 mt-1">小时专注</p>
+                <p class="text-2xl font-bold text-amber-500">{{ Math.round(storageStats.totalFocusMinutes / 60) }}</p>
+                <p class="text-[11px] text-slate-500 mt-1">小时专注</p>
               </div>
             </div>
             <div class="mt-8 pt-6 border-t border-slate-100 w-full text-center">
@@ -657,11 +683,18 @@
       class="sheet-resize-handle"
       @mousedown.stop="startResize"
     ></div>
+    <dialog ref="confirmDialog" class="confirm-dialog">
+      <p class="text-sm text-slate-700 mb-4">{{ confirmMsg }}</p>
+      <div class="flex gap-2 justify-end">
+        <button class="btn-secondary" @click="doCancel">取消</button>
+        <button class="danger-btn" @click="doConfirm">确定</button>
+      </div>
+    </dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 import {
   Palette,
   LayoutGrid,
@@ -671,8 +704,11 @@ import {
   Database,
   Info,
   ChevronRight,
+  Maximize,
+  Minimize2,
 } from "lucide-vue-next";
 import { useSheetWindow } from "../composables/useSheetWindow";
+import { useSettings } from "../composables/useSettings";
 
 const emit = defineEmits(["close"]);
 
@@ -693,6 +729,22 @@ const {
   id: "settings",
 });
 
+const { get, set, init, persist, exportAllData, importAllData, clearAllCards, resetToFactory, getStorageStats, wallpaperPresets: presets } = useSettings();
+
+// 显示值 <-> 存储值映射
+const layoutToStorage = { '自动': 'auto', '自由': 'free' }
+const layoutToDisplay = { 'auto': '自动', 'free': '自由' }
+const cardTypeToStorage = { '记忆卡': 'qa', '文章卡': 'article' }
+const cardTypeToDisplay = { 'qa': '记忆卡', 'article': '文章卡' }
+const durToMin = { '15分钟': 15, '25分钟': 25, '45分钟': 45 }
+const minToDur = { 15: '15分钟', 25: '25分钟', 45: '45分钟' }
+const shortToMin = { '5分钟': 5, '10分钟': 10 }
+const minToShort = { 5: '5分钟', 10: '10分钟' }
+const cycleToNum = { '3个': 3, '4个': 4, '5个': 5 }
+const numToCycle = { 3: '3个', 4: '4个', 5: '5个' }
+const longDurToMin = { '15分钟': 15, '20分钟': 20, '30分钟': 30 }
+const minToLongDur = { 15: '15分钟', 20: '20分钟', 30: '30分钟' }
+
 // 外观设置
 const activeTab = ref("appearance");
 
@@ -708,39 +760,24 @@ const tabs = [
 
 // 外观
 const selectedWallpaper = ref(0);
-const wallpapers = [
-  {
-    url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=200&q=80",
-    title: "默认流体壁纸",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=200&q=80",
-    title: "渐变紫粉",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=200&q=80",
-    title: "极光绿",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1557672179-29860c9e6912?auto=format&fit=crop&w=200&q=80",
-    title: "深空蓝",
-  },
-];
+const wallpapers = presets;
 const blurStrength = ref(25);
 const barOpacity = ref(50);
 const reduceMotion = ref(false);
 const dockZoom = ref(true);
+const globalTheme = ref('light');
+const globalThemeLabel = computed(() => globalTheme.value === 'light' ? '浅色' : '深色');
 
 // 桌面
 const layoutMode = ref("自动");
 const iconGap = ref(90);
 const showIconLabels = ref(true);
 const trashDirectDelete = ref(false);
-
 // 卡片
 const defaultCardType = ref("记忆卡");
 const flipSpeed = ref(500);
 const flip3d = ref(true);
+const flipPerspective = ref(1000);
 const cardWidth = ref(310);
 const cardHeight = ref(220);
 const articleWidth = ref(350);
@@ -761,6 +798,198 @@ const longBreakDuration = ref("20分钟");
 const pomodoroSound = ref(true);
 const desktopNotify = ref(true);
 const autoStartPomodoro = ref(false);
+
+// 数据
+const storageStats = ref({ cardCount: 0, appCount: 0, catCount: 0, reviewCount: 0, totalCompletions: 0, totalFocusMinutes: 0, estimatedSize: 0 })
+
+// ---- 工具函数 ----
+function formatSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB']
+  let i = 0
+  let size = bytes
+  while (size >= 1024 && i < units.length - 1) { size /= 1024; i++ }
+  return size.toFixed(i === 0 ? 0 : 1) + ' ' + units[i]
+}
+
+// ---- 从 storage 加载到 UI 显示值 ----
+async function loadSettings() {
+  await init()
+  const s = get()
+
+  selectedWallpaper.value = s.wallpaperIndex ?? 0
+  blurStrength.value = s.blurStrength ?? 25
+  barOpacity.value = s.barOpacity ?? 50
+  reduceMotion.value = s.reduceMotion ?? false
+  dockZoom.value = s.dockZoom ?? true
+  globalTheme.value = s.theme ?? 'light'
+
+  layoutMode.value = layoutToDisplay[s.layoutMode] || '自动'
+  iconGap.value = s.iconGap ?? 90
+  showIconLabels.value = s.showIconLabels ?? true
+  trashDirectDelete.value = s.trashDirectDelete ?? false
+  defaultCardType.value = cardTypeToDisplay[s.defaultCardType] || '记忆卡'
+  flipSpeed.value = s.flipSpeed ?? 500
+  flip3d.value = s.flip3d ?? true
+  flipPerspective.value = s.flipPerspective ?? 1000
+  cardWidth.value = s.cardWidth ?? 310
+  cardHeight.value = s.cardHeight ?? 220
+  articleWidth.value = s.articleWidth ?? 350
+
+  initialInterval.value = s.initialInterval ?? 1
+  easeFactor.value = s.easeFactor ?? 2.5
+  minIntervalMult.value = s.minIntervalMult ?? 1.3
+  autoNextCard.value = s.autoNextCard ?? true
+  showEbbinghaus.value = s.showEbbinghaus ?? true
+  shuffleCards.value = s.shuffleCards ?? false
+
+  focusDuration.value = minToDur[s.focusDuration] || '25分钟'
+  shortBreak.value = minToShort[s.shortBreak] || '5分钟'
+  longBreakCycle.value = numToCycle[s.longBreakCycle] || '4个'
+  longBreakDuration.value = minToLongDur[s.longBreakDuration] || '20分钟'
+  pomodoroSound.value = s.pomodoroSound ?? true
+  desktopNotify.value = s.desktopNotify ?? true
+  autoStartPomodoro.value = s.autoStartPomodoro ?? false
+
+  await refreshStats()
+}
+
+async function refreshStats() {
+  const stats = await getStorageStats()
+  storageStats.value = stats
+}
+
+// ---- 从 UI 显示值写回 storage ----
+function saveSetting(key, value) {
+  set(key, value)
+  // persist 由 useSettings 的 deep watch 自动触发
+}
+
+// watch 所有 ref，变更时持久化
+watch(selectedWallpaper, (v) => saveSetting('wallpaperIndex', v))
+watch(blurStrength, (v) => saveSetting('blurStrength', v))
+watch(barOpacity, (v) => saveSetting('barOpacity', v))
+watch(reduceMotion, (v) => saveSetting('reduceMotion', v))
+watch(dockZoom, (v) => saveSetting('dockZoom', v))
+watch(globalTheme, (v) => saveSetting('theme', v))
+
+watch(layoutMode, (v) => saveSetting('layoutMode', layoutToStorage[v] || 'auto'))
+watch(iconGap, (v) => saveSetting('iconGap', v))
+watch(showIconLabels, (v) => saveSetting('showIconLabels', v))
+watch(trashDirectDelete, (v) => saveSetting('trashDirectDelete', v))
+watch(defaultCardType, (v) => saveSetting('defaultCardType', cardTypeToStorage[v] || 'qa'))
+watch(flipSpeed, (v) => saveSetting('flipSpeed', v))
+watch(flip3d, (v) => saveSetting('flip3d', v))
+watch(flipPerspective, (v) => saveSetting('flipPerspective', v))
+watch(cardWidth, (v) => saveSetting('cardWidth', v))
+watch(cardHeight, (v) => saveSetting('cardHeight', v))
+watch(articleWidth, (v) => saveSetting('articleWidth', v))
+
+watch(initialInterval, (v) => saveSetting('initialInterval', v))
+watch(easeFactor, (v) => saveSetting('easeFactor', v))
+watch(minIntervalMult, (v) => saveSetting('minIntervalMult', v))
+watch(autoNextCard, (v) => saveSetting('autoNextCard', v))
+watch(showEbbinghaus, (v) => saveSetting('showEbbinghaus', v))
+watch(shuffleCards, (v) => saveSetting('shuffleCards', v))
+
+watch(focusDuration, (v) => saveSetting('focusDuration', durToMin[v] || 25))
+watch(shortBreak, (v) => saveSetting('shortBreak', shortToMin[v] || 5))
+watch(longBreakCycle, (v) => saveSetting('longBreakCycle', cycleToNum[v] || 4))
+watch(longBreakDuration, (v) => saveSetting('longBreakDuration', longDurToMin[v] || 20))
+watch(pomodoroSound, (v) => saveSetting('pomodoroSound', v))
+watch(desktopNotify, (v) => saveSetting('desktopNotify', v))
+watch(autoStartPomodoro, (v) => saveSetting('autoStartPomodoro', v))
+
+function handleCustomWallpaper() {
+  if (wallpaperInput.value) wallpaperInput.value.click()
+}
+
+async function onWallpaperUpload(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = async (ev) => {
+    const base64 = ev.target.result
+    set('customWallpaper', base64)
+    set('wallpaperIndex', -1)
+    persist()
+    selectedWallpaper.value = -1
+  }
+  reader.readAsDataURL(file)
+}
+
+const wallpaperInput = ref(null)
+
+// ---- 数据操作 ----
+const confirmDialog = ref(null)
+const confirmMsg = ref('')
+const confirmAction = ref(null)
+
+function showConfirm(msg, action) {
+  confirmMsg.value = msg
+  confirmAction.value = action
+  if (confirmDialog.value) confirmDialog.value.showModal()
+}
+
+async function handleExport() {
+  const data = await exportAllData()
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `cnotely-backup-${new Date().toISOString().slice(0, 10)}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function handleImport() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  input.onchange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+      await importAllData(data)
+      await loadSettings()
+      emit('dataChanged')
+    } catch (err) {
+      alert('导入失败：' + err.message)
+    }
+  }
+  input.click()
+}
+
+function handleClearCards() {
+  showConfirm('确定要清空所有卡片吗？此操作不可撤销。', async () => {
+    await clearAllCards()
+    await refreshStats()
+    emit('dataChanged')
+  })
+}
+
+function handleReset() {
+  showConfirm('确定要重置为出厂设置吗？所有数据将被清除！', async () => {
+    await resetToFactory()
+    await loadSettings()
+    emit('dataChanged')
+  })
+}
+
+function doConfirm() {
+  if (confirmAction.value) confirmAction.value()
+  if (confirmDialog.value) confirmDialog.value.close()
+}
+function doCancel() {
+  if (confirmDialog.value) confirmDialog.value.close()
+}
+
+onMounted(async () => {
+  await nextTick()
+  await loadSettings()
+})
 </script>
 
 <style scoped>
@@ -779,7 +1008,7 @@ const autoStartPomodoro = ref(false);
 .sheet-header,
 .settings-sidebar,
 .settings-main {
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--panel-bg);
   backdrop-filter: blur(30px) saturate(190%);
   -webkit-backdrop-filter: blur(30px) saturate(190%);
 }
@@ -788,7 +1017,7 @@ const autoStartPomodoro = ref(false);
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 0.5px solid var(--border-subtle);
   flex-shrink: 0;
   cursor: grab;
   user-select: none;
@@ -802,10 +1031,9 @@ const autoStartPomodoro = ref(false);
   align-items: center;
 }
 .sheet-drag-bar {
-  /* width: 24px; */
   height: 4px;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--border-input);
   flex-shrink: 0;
   margin: -30px 0 0px 0;
 }
@@ -814,17 +1042,17 @@ const autoStartPomodoro = ref(false);
   height: 26px;
   border-radius: 6px;
   border: none;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--kbd-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #5a5e64;
+  color: var(--text-tertiary);
 }
 .sheet-control-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1a1a2e;
+  background: var(--button-secondary-bg);
+  color: var(--text-primary);
 }
 .sheet-control-btn svg {
   width: 13px;
@@ -853,7 +1081,7 @@ const autoStartPomodoro = ref(false);
 .sheet-title-text h2 {
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text-primary);
   line-height: 1.2;
 }
 .sheet-title-text span {
@@ -861,7 +1089,7 @@ const autoStartPomodoro = ref(false);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
-  color: #8b92a5;
+  color: var(--text-placeholder);
   margin-top: 1px;
 }
 .sheet-close {
@@ -869,17 +1097,17 @@ const autoStartPomodoro = ref(false);
   height: 26px;
   border-radius: 6px;
   border: none;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--kbd-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #5a5e64;
+  color: var(--text-tertiary);
 }
 .sheet-close:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1a1a2e;
+  background: var(--button-secondary-bg);
+  color: var(--text-primary);
 }
 .sheet-close svg {
   width: 11px;
@@ -887,7 +1115,7 @@ const autoStartPomodoro = ref(false);
 }
 
 .settings-sidebar {
-  border-right: 1px solid rgba(255, 255, 255, 0.35);
+  border-right: 1px solid var(--border-subtle);
 }
 
 .sidebar-item {
@@ -899,7 +1127,7 @@ const autoStartPomodoro = ref(false);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: #475569;
+  color: var(--sidebar-item-text);
   transition: all 0.12s ease;
   border: none;
   background: none;
@@ -907,40 +1135,40 @@ const autoStartPomodoro = ref(false);
   width: 100%;
 }
 .sidebar-item:hover {
-  background: rgba(59, 130, 246, 0.06);
-  color: #1e293b;
+  background: var(--sidebar-item-hover);
+  color: var(--text-heading);
 }
 .sidebar-item.active {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
+  background: var(--sidebar-item-active);
+  color: var(--sidebar-item-active-text);
   font-weight: 600;
 }
 
 .panel-header {
   padding: 20px 24px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
 }
 .panel-header h2 {
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-heading);
 }
 .panel-header p {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
 .setting-group-title {
   font-size: 11px;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 16px 20px 8px;
 }
 .setting-group-title.danger-zone {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .setting-row {
@@ -951,17 +1179,17 @@ const autoStartPomodoro = ref(false);
   transition: background 0.12s ease;
 }
 .setting-row:hover {
-  background: rgba(59, 130, 246, 0.04);
+  background: var(--accent-light);
 }
 
 .setting-label {
   font-size: 13px;
   font-weight: 500;
-  color: #334155;
+  color: var(--text-label);
 }
 .setting-desc {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -970,7 +1198,7 @@ const autoStartPomodoro = ref(false);
   width: 44px;
   height: 24px;
   border-radius: 12px;
-  background: #e2e8f0;
+  background: var(--toggle-off);
   position: relative;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -979,7 +1207,7 @@ const autoStartPomodoro = ref(false);
   outline: none;
 }
 .toggle-switch.active {
-  background: #3b82f6;
+  background: var(--accent);
 }
 .toggle-switch::after {
   content: "";
@@ -987,7 +1215,7 @@ const autoStartPomodoro = ref(false);
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: white;
+  background: var(--toggle-off-dot);
   top: 2px;
   left: 2px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -1000,7 +1228,7 @@ const autoStartPomodoro = ref(false);
 /* Segmented Control */
 .segmented-control {
   display: inline-flex;
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--segmented-bg);
   border-radius: 8px;
   padding: 2px;
 }
@@ -1008,7 +1236,7 @@ const autoStartPomodoro = ref(false);
   padding: 5px 14px;
   font-size: 12px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--text-muted);
   border: none;
   background: transparent;
   border-radius: 6px;
@@ -1016,8 +1244,8 @@ const autoStartPomodoro = ref(false);
   transition: all 0.15s ease;
 }
 .segmented-btn.active {
-  background: white;
-  color: #1e293b;
+  background: var(--segmented-active);
+  color: var(--segmented-active-text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -1025,17 +1253,16 @@ const autoStartPomodoro = ref(false);
 .settings-input {
   padding: 7px 12px;
   font-size: 13px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-input);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--input-bg);
+  color: var(--text-primary);
   outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .settings-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .range-slider {
@@ -1043,7 +1270,7 @@ const autoStartPomodoro = ref(false);
   appearance: none;
   height: 4px;
   border-radius: 2px;
-  background: #e2e8f0;
+  background: var(--range-track);
   outline: none;
 }
 .range-slider::-webkit-slider-thumb {
@@ -1052,7 +1279,7 @@ const autoStartPomodoro = ref(false);
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: var(--accent);
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(59, 130, 246, 0.35);
   transition: transform 0.12s;
@@ -1074,8 +1301,8 @@ const autoStartPomodoro = ref(false);
   transform: scale(1.05);
 }
 .wallpaper-thumb.selected {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .btn-primary {
@@ -1083,7 +1310,7 @@ const autoStartPomodoro = ref(false);
   font-size: 12px;
   font-weight: 600;
   color: white;
-  background: #3b82f6;
+  background: var(--accent);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -1091,30 +1318,30 @@ const autoStartPomodoro = ref(false);
   box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
 }
 .btn-primary:hover {
-  background: #2563eb;
+  background: var(--accent-hover);
 }
 
 .btn-secondary {
   padding: 7px 18px;
   font-size: 12px;
   font-weight: 600;
-  color: #334155;
-  background: #f1f5f9;
+  color: var(--text-label);
+  background: var(--button-secondary-bg);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
 }
 .btn-secondary:hover {
-  background: #e2e8f0;
+  background: var(--button-secondary-hover);
 }
 
 .btn-disabled {
   padding: 7px 18px;
   font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
-  background: #f8fafc;
+  color: var(--text-muted);
+  background: var(--surface-50);
   border: none;
   border-radius: 8px;
   cursor: not-allowed;
@@ -1124,17 +1351,17 @@ const autoStartPomodoro = ref(false);
   padding: 8px 18px;
   font-size: 12px;
   font-weight: 600;
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.06);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--danger);
+  background: var(--danger-light);
+  border: 1px solid var(--danger-light);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 .danger-btn:hover {
-  background: #ef4444;
+  background: var(--danger);
   color: white;
-  border-color: #ef4444;
+  border-color: var(--danger);
 }
 
 @keyframes settingsIn {
@@ -1164,8 +1391,8 @@ const autoStartPomodoro = ref(false);
   right: 4px;
   width: 8px;
   height: 8px;
-  border-right: 1.5px solid rgba(0, 0, 0, 0.12);
-  border-bottom: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-right: 1.5px solid var(--border-input);
+  border-bottom: 1.5px solid var(--border-input);
 }
 
 .settings-main::-webkit-scrollbar {
@@ -1175,10 +1402,25 @@ const autoStartPomodoro = ref(false);
   background: transparent;
 }
 .settings-main::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--border-input);
   border-radius: 10px;
 }
 .settings-main::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--separator);
+}
+.confirm-dialog::backdrop {
+  background: var(--dialog-backdrop);
+  backdrop-filter: blur(4px);
+}
+.confirm-dialog {
+  border: none;
+  border-radius: 12px;
+  padding: 20px 24px;
+  background: var(--dialog-bg);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  min-width: 320px;
+  max-width: 420px;
+  color: var(--text-primary);
 }
 </style>

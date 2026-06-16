@@ -1,267 +1,148 @@
 <template>
-  <div
-    class="desktop-container h-screen w-screen overflow-hidden relative"
-    @click="handleDesktopClick"
-  >
-    <div class="absolute inset-0 macos-wallpaper"></div>
+  <div class="desktop-container h-screen w-screen overflow-hidden relative"
+    :class="[workbenchThemeClass, { 'reduce-motion': reduceMotion }]" :style="desktopCssVars"
+    @click="handleDesktopClick">
+    <div class="absolute inset-0 macos-wallpaper" :style="wallpaperBgStyle"></div>
+    <!-- 深色模式壁纸蒙层 -->
+    <div class="absolute inset-0 z-[1] pointer-events-none" :style="overlayStyle"></div>
 
-    <header
-      class="macos-menubar absolute top-0 left-0 right-0 h-7 flex items-center justify-between px-4 z-50"
-    >
-      <div class="flex items-center gap-4">
+    <!-- 顶部栏 — 全宽无边距无圆角 -->
+    <header class="absolute top-0 left-0 right-0 z-50 h-7 flex items-center justify-between px-4" :style="headerStyle">
+      <div class="flex items-center gap-3">
         <div class="flex items-center gap-1.5">
           <div
-            class="w-4 h-4 bg-gradient-to-br from-blue-400 to-purple-500 rounded-md flex items-center justify-center text-white text-[10px] font-bold"
-          >
+            class="w-4 h-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md flex items-center justify-center text-white text-[10px] font-bold">
             C
           </div>
         </div>
-        <span class="text-xs font-semibold text-slate-800 tracking-tight"
-          >cnotely</span
-        >
-        <button
-          @click="toggleLayoutMode"
-          class="text-xs text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1"
-        >
-          <Grid :size="12" v-if="desktopLayoutMode === 'auto'" />
-          <Move :size="12" v-else />
-          {{ desktopLayoutMode === "auto" ? "整理桌面" : "自由排列" }}
-        </button>
-        <button
-          @click="showLauncher = true"
-          class="text-xs text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1"
-        >
+        <span class="text-xs font-semibold tracking-tight menubar-text">cnotely</span>
+        <div class="menubar-sep"></div>
+        <button @click="showLauncher = true" class="menubar-btn">
           <Plus :size="12" /> 新建
         </button>
-        <button
-          @click="showSetting = true"
-          class="text-xs text-slate-800 hover:text-blue-600 transition-colors flex items-center gap-1"
-          title="设置"
-        >
+        <button @click="toggleLayoutMode" class="menubar-btn">
+          <Grid :size="12" v-if="desktopLayoutMode === 'auto'" />
+          <Move :size="12" v-else />
+          {{ desktopLayoutMode === "auto" ? "整理" : "自由" }}
+        </button>
+        <button @click="showSetting = true" class="menubar-btn" title="设置">
           <SettingsIcon :size="12" /> 设置
         </button>
       </div>
       <div class="flex items-center gap-3">
-        <span class="text-xs text-slate-800 font-medium">{{
-          currentDate
-        }}</span>
-        <span class="text-xs text-slate-800 font-medium">{{
-          currentTime
-        }}</span>
+        <span class="text-xs font-medium menubar-text-muted">{{ currentDate }}</span>
+        <span class="text-xs font-semibold font-mono menubar-text">{{ currentTime }}</span>
       </div>
     </header>
 
-    <main class="absolute top-7 left-0 right-0 bottom-0 pt-4 px-3">
-      <div
-        v-if="desktopLayoutMode === 'auto'"
-        class="grid grid-flow-col grid-rows-[repeat(auto-fill,90px)] gap-x-4 content-start h-full"
-        ref="autoGridRef"
-      >
-        <DesktopIcon
-          v-for="(app, index) in apps"
-          :key="app.id"
-          :app="app"
-          :is-selected="selectedIconId === app.id"
-          :layout-mode="desktopLayoutMode"
-          :class="{
+    <main class="absolute top-7 left-0 right-0 bottom-0 pt-2 px-3">
+      <div v-if="desktopLayoutMode === 'auto'"
+        class="grid grid-flow-col grid-rows-[repeat(auto-fill,90px)] gap-x-4 content-start h-full" ref="autoGridRef">
+        <DesktopIcon v-for="(app, index) in apps" :key="app.id" :app="app" :is-selected="selectedIconId === app.id"
+          :layout-mode="desktopLayoutMode" :class="{
             'icon-drop-target':
               dropTargetIndex === index && draggingAppId !== app.id,
-          }"
-          @click="handleIconClick"
-          @contextmenu="handleIconContextMenu"
-          @reorder="(x, y) => handleReorder(x, y, app.id)"
-          @reorder-end="finishReorder"
-        />
+          }" @click="handleIconClick" @contextmenu="handleIconContextMenu"
+          @reorder="(x, y) => handleReorder(x, y, app.id)" @reorder-end="finishReorder" />
       </div>
       <div v-else class="relative w-full h-full">
-        <DesktopIcon
-          v-for="app in apps"
-          :key="app.id"
-          :app="app"
-          :is-selected="selectedIconId === app.id"
-          :grid-x="previewPositions[app.id]?.gridX ?? app.gridX"
-          :grid-y="previewPositions[app.id]?.gridY ?? app.gridY"
-          :layout-mode="desktopLayoutMode"
-          :is-preview="!!previewPositions[app.id]"
-          @click="handleIconClick"
-          @contextmenu="handleIconContextMenu"
-          @drag-move="handleIconDragMove"
-          @drag-end="handleIconDragEnd"
-          @dragging="handleIconDragging"
-        />
+        <DesktopIcon v-for="app in apps" :key="app.id" :app="app" :is-selected="selectedIconId === app.id"
+          :grid-x="previewPositions[app.id]?.gridX ?? app.gridX" :grid-y="previewPositions[app.id]?.gridY ?? app.gridY"
+          :layout-mode="desktopLayoutMode" :is-preview="!!previewPositions[app.id]" @click="handleIconClick"
+          @contextmenu="handleIconContextMenu" @drag-move="handleIconDragMove" @drag-end="handleIconDragEnd"
+          @dragging="handleIconDragging" />
       </div>
     </main>
 
-    <WindowFrame
-      v-for="win in openWindows"
-      :key="win.id"
-      :id="win.id"
-      :title="win.title"
-      :x="win.x"
-      :y="win.y"
-      :width="win.width"
-      :height="win.height"
-      :is-active="activeWindowId === win.id"
-      :show-titlebar="false"
-      :z-index="win.z"
-      :drag-bar-color="getWindowDragBarColor(win, flippedWindows[win.id])"
+    <WindowFrame v-for="win in openWindows" :key="win.id" :id="win.id" :title="win.title" :x="win.x" :y="win.y"
+      :width="win.width" :height="win.height" :is-active="activeWindowId === win.id" :show-titlebar="false"
+      :z-index="win.z" :drag-bar-color="getWindowDragBarColor(win, flippedWindows[win.id])"
       :drag-bar-style="getWindowDragBarStyle(win, flippedWindows[win.id])"
-      :dark-drag-bar="!!flippedWindows[win.id]"
-      :pinned="!!pinnedWindows[win.id]"
-      @close="
+      :dark-drag-bar="!!flippedWindows[win.id] || isDarkWb" :pinned="!!pinnedWindows[win.id]" @close="
         closeWindow(win.id);
-        flippedWindows[win.id] = false;
-      "
-      @minimize="minimizeWindow(win.id)"
-      @focus="focusWindow"
+      flippedWindows[win.id] = false;
+      " @minimize="minimizeWindow(win.id)" @focus="focusWindow"
       @update:position="(pos) => updateWindowPosition(win.id, pos)"
-      @update:size="(size) => updateWindowSize(win.id, size)"
-      @dragging="(x, y) => handleWindowDragging(win.id, x, y)"
-      @drag-end="handleWindowDragEnd(win.id)"
-      @pin-toggle="togglePinWindow(win.id)"
-    >
+      @update:size="(size) => updateWindowSize(win.id, size)" @dragging="(x, y) => handleWindowDragging(win.id, x, y)"
+      @drag-end="handleWindowDragEnd(win.id)" @pin-toggle="togglePinWindow(win.id)">
       <template v-if="win.type === 'card'">
-        <CardWindowContent
-          :card-id="win.cardId"
-          :is-active="activeWindowId === win.id"
-          @edit="openEditor"
-          @delete="handleDeleteCard"
-          @close="
+        <CardWindowContent :card-id="win.cardId" :is-active="activeWindowId === win.id" @edit="openEditor"
+          @delete="handleDeleteCard" @close="
             closeWindow(win.id);
-            flippedWindows[win.id] = false;
-          "
-          @flip="flippedWindows[win.id] = $event"
-        />
+          flippedWindows[win.id] = false;
+          " @flip="flippedWindows[win.id] = $event" />
       </template>
     </WindowFrame>
 
-    <div
-      class="macos-dock-wrapper absolute bottom-1 left-1/2 -translate-x-1/2 z-[9998]"
-    >
-      <div class="macos-dock flex items-end gap-0.5 px-2 py-1.5">
-        <div
-          class="dock-item"
-          @click="showLauncher = true"
-          @mouseenter="handleDockHover($event, 0)"
-        >
+    <!-- 卡片式 Dock -->
+    <div ref="dockWrapperRef" class="absolute bottom-3 left-1/2 -translate-x-1/2 z-[9998]">
+      <div class="flex items-center gap-2 px-3 py-2" :style="dockStyle">
+        <div class="dock-item" @click="showLauncher = true" @mouseenter="handleDockHover($event, 0)">
           <div class="dock-icon dock-icon-launcher">
             <Plus :size="28" class="text-white" />
           </div>
-          <span class="dock-label">新建</span>
+          <span class="dock-label" v-show="showIconLabels">新建</span>
         </div>
 
         <div class="dock-separator"></div>
 
-        <div
-          v-for="(cat, index) in categories"
-          :key="cat.id"
-          class="dock-item"
-          @click="openCategoryFolder(cat)"
+        <div v-for="(cat, index) in categories" :key="cat.id" class="dock-item" @click="openCategoryFolder(cat)"
           @contextmenu.prevent="handleCategoryContextMenu($event, cat)"
-          @mouseenter="handleDockHover($event, index + 1)"
-        >
-          <div
-            class="dock-icon"
-            :style="{
-              background:
-                cat.customColor || cat.iconColor || getCategoryColor(cat.slug),
-            }"
-          >
-            <component
-              v-if="cat.iconComp && iconComponents[cat.iconComp]"
-              :is="iconComponents[cat.iconComp]"
-              :size="28"
-              class="text-white"
-            />
+          @mouseenter="handleDockHover($event, index + 1)">
+          <div class="dock-icon" :style="{
+            background:
+              cat.customColor || cat.iconColor || getCategoryColor(cat.slug),
+          }">
+            <component v-if="cat.iconComp && iconComponents[cat.iconComp]" :is="iconComponents[cat.iconComp]" :size="28"
+              class="text-white" />
           </div>
-          <span class="dock-label">{{ cat.name }}</span>
+          <span class="dock-label" v-show="showIconLabels">{{ cat.name }}</span>
         </div>
 
         <div class="dock-separator"></div>
 
-        <div
-          class="dock-item"
-          @click="clearCanvas"
-          @mouseenter="handleDockHover($event, categories.length + 1)"
-        >
+        <div class="dock-item" @click="clearCanvas" @mouseenter="handleDockHover($event, categories.length + 1)">
           <div class="dock-icon dock-icon-clear">
             <Eraser :size="28" class="text-white" />
           </div>
-          <span class="dock-label">清空桌面</span>
+          <span class="dock-label" v-show="showIconLabels">清空</span>
         </div>
 
-        <div
-          class="dock-item"
-          @click="openTrash"
-          @mouseenter="handleDockHover($event, categories.length + 2)"
-        >
-          <div
-            class="dock-icon dock-icon-trash"
-            :class="{ 'dock-icon-trash-active': isDraggingOverTrash }"
-          >
+        <div class="dock-item" @click="openTrash" @mouseenter="handleDockHover($event, categories.length + 2)">
+          <div class="dock-icon dock-icon-trash" :class="{ 'dock-icon-trash-active': isDraggingOverTrash }">
             <Trash2 :size="28" class="text-white" />
           </div>
-          <span class="dock-label">废纸篓</span>
+          <span class="dock-label" v-show="showIconLabels">废纸篓</span>
           <div v-if="isDraggingOverTrash" class="trash-drop-hint">
             <span>释放删除</span>
           </div>
           <Transition name="hint-fade">
-            <div
-              v-if="showTrashHint"
-              class="trash-guide-hint"
-              @click.stop="closeTrashHint"
-            >
+            <div v-if="showTrashHint" class="trash-guide-hint" @click.stop="closeTrashHint">
               <div class="trash-guide-hint-content">
-                <span>💡 拖拽卡片到此处删除</span>
-                <button
-                  class="trash-guide-hint-close"
-                  @click.stop="closeTrashHint"
-                >
+                <span>拖拽卡片到此处删除</span>
+                <button class="trash-guide-hint-close" @click.stop="closeTrashHint">
                   知道了
                 </button>
               </div>
             </div>
           </Transition>
         </div>
-        <div
-          v-if="!trashMaximized"
-          class="sheet-resize-handle"
-          @mousedown.stop="trashStartResize"
-        ></div>
+        <div v-if="!trashMaximized" class="sheet-resize-handle" @mousedown.stop="trashStartResize"></div>
       </div>
     </div>
 
-    <AppLauncher
-      v-if="showLauncher"
-      @close="showLauncher = false"
-      @create-app="handleCreateApp"
-      @create-card="handleCreateCard"
-      @create-category="handleCreateCategory"
-    />
+    <AppLauncher v-if="showLauncher" @close="showLauncher = false" @create-app="handleCreateApp"
+      @create-card="handleCreateCard" @create-category="handleCreateCategory" />
 
-    <Settings v-if="showSetting" @close="showSetting = false" />
+    <Settings v-if="showSetting" @close="showSetting = false" @dataChanged="handleDataChanged" />
 
-    <CardEditor
-      v-if="editorVisible"
-      :card-id="editingCardId"
-      @close="closeEditor"
-      @save="handleSaveCard"
-    />
+    <CardEditor v-if="editorVisible" :card-id="editingCardId" @close="closeEditor" @save="handleSaveCard" />
 
-    <ContextMenu
-      v-if="contextMenu.visible"
-      :x="contextMenu.x"
-      :y="contextMenu.y"
-      :items="contextMenu.items"
-      @close="contextMenu.visible = false"
-      @select="handleContextMenuSelect"
-    />
+    <ContextMenu v-if="contextMenu.visible" :x="contextMenu.x" :y="contextMenu.y" :items="contextMenu.items"
+      @close="contextMenu.visible = false" @select="handleContextMenuSelect" />
 
-    <div
-      v-if="showAppEditor"
-      class="macos-overlay fixed inset-0 z-[9999] flex items-center justify-center"
-      @click.self="showAppEditor = false"
-    >
+    <div v-if="showAppEditor" class="macos-overlay fixed inset-0 z-[9999] flex items-center justify-center"
+      @click.self="showAppEditor = false">
       <div class="macos-sheet" style="width: 440px">
         <div class="sheet-header">
           <h2 class="sheet-title">编辑链接</h2>
@@ -274,63 +155,37 @@
           <div class="app-edit-form">
             <div class="form-row">
               <label class="form-label">应用名称</label>
-              <input
-                v-model="appEditForm.name"
-                type="text"
-                placeholder="例如：GitHub"
-                class="form-input"
-              />
+              <input v-model="appEditForm.name" type="text" placeholder="例如：GitHub" class="form-input" />
             </div>
             <div class="form-row">
               <label class="form-label">链接地址</label>
-              <input
-                v-model="appEditForm.url"
-                type="url"
-                placeholder="https://..."
-                class="form-input"
-              />
+              <input v-model="appEditForm.url" type="url" placeholder="https://..." class="form-input" />
             </div>
             <div class="form-row">
               <label class="form-label">图标</label>
               <div class="icon-mode-tabs">
-                <button
-                  @click="appEditForm.iconMode = 'favicon'"
-                  :class="[
-                    'icon-mode-tab',
-                    {
-                      'icon-mode-tab-active':
-                        appEditForm.iconMode === 'favicon',
-                    },
-                  ]"
-                >
+                <button @click="appEditForm.iconMode = 'favicon'" :class="[
+                  'icon-mode-tab',
+                  {
+                    'icon-mode-tab-active':
+                      appEditForm.iconMode === 'favicon',
+                  },
+                ]">
                   <Globe :size="14" />
                   <span>网页图标</span>
                 </button>
-                <button
-                  @click="appEditForm.iconMode = 'text'"
-                  :class="[
-                    'icon-mode-tab',
-                    { 'icon-mode-tab-active': appEditForm.iconMode === 'text' },
-                  ]"
-                >
+                <button @click="appEditForm.iconMode = 'text'" :class="[
+                  'icon-mode-tab',
+                  { 'icon-mode-tab-active': appEditForm.iconMode === 'text' },
+                ]">
                   <Pen :size="14" />
                   <span>文字图标</span>
                 </button>
               </div>
-              <div
-                v-if="appEditForm.iconMode === 'favicon'"
-                class="favicon-section"
-              >
+              <div v-if="appEditForm.iconMode === 'favicon'" class="favicon-section">
                 <div class="favicon-row">
-                  <div
-                    class="favicon-preview-box"
-                    :style="{ background: appEditForm.color }"
-                  >
-                    <img
-                      v-if="appEditFaviconUrl"
-                      :src="appEditFaviconUrl"
-                      class="favicon-preview-img"
-                    />
+                  <div class="favicon-preview-box" :style="{ background: appEditForm.color }">
+                    <img v-if="appEditFaviconUrl" :src="appEditFaviconUrl" class="favicon-preview-img" />
                     <div v-else class="favicon-preview-placeholder">
                       <Globe :size="20" />
                     </div>
@@ -348,57 +203,34 @@
                 </div>
                 <div class="favicon-colors">
                   <div class="text-icon-colors">
-                    <button
-                      v-for="c in editPresetColors"
-                      :key="c"
-                      @click="appEditForm.color = c"
-                      :class="[
-                        'color-swatch',
-                        { 'color-swatch-selected': appEditForm.color === c },
-                      ]"
-                      :style="{
-                        background: c,
-                        border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none',
-                      }"
-                    />
+                    <button v-for="c in editPresetColors" :key="c" @click="appEditForm.color = c" :class="[
+                      'color-swatch',
+                      { 'color-swatch-selected': appEditForm.color === c },
+                    ]" :style="{
+                      background: c,
+                      border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none',
+                    }" />
                     <label class="color-picker-wrap" title="自定义颜色">
-                      <input
-                        type="color"
-                        v-model="appEditForm.color"
-                        class="color-picker-native"
-                      />
+                      <input type="color" v-model="appEditForm.color" class="color-picker-native" />
                       <Pen :size="12" />
                     </label>
                   </div>
                 </div>
               </div>
               <div v-else class="text-icon-row">
-                <div
-                  class="text-icon-preview"
-                  :style="{ background: appEditForm.color }"
-                >
+                <div class="text-icon-preview" :style="{ background: appEditForm.color }">
                   <span class="text-icon-char">{{ editTextIconChar }}</span>
                 </div>
                 <div class="text-icon-colors">
-                  <button
-                    v-for="c in editPresetColors"
-                    :key="c"
-                    @click="appEditForm.color = c"
-                    :class="[
-                      'color-swatch',
-                      { 'color-swatch-selected': appEditForm.color === c },
-                    ]"
-                    :style="{
-                      background: c,
-                      border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none',
-                    }"
-                  />
+                  <button v-for="c in editPresetColors" :key="c" @click="appEditForm.color = c" :class="[
+                    'color-swatch',
+                    { 'color-swatch-selected': appEditForm.color === c },
+                  ]" :style="{
+                    background: c,
+                    border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none',
+                  }" />
                   <label class="color-picker-wrap" title="自定义颜色">
-                    <input
-                      type="color"
-                      v-model="appEditForm.color"
-                      class="color-picker-native"
-                    />
+                    <input type="color" v-model="appEditForm.color" class="color-picker-native" />
                     <Pen :size="12" />
                   </label>
                 </div>
@@ -410,11 +242,8 @@
           <button @click="showAppEditor = false" class="btn btn-secondary">
             取消
           </button>
-          <button
-            @click="saveAppEditor"
-            :disabled="!appEditForm.name.trim() || !appEditForm.url.trim()"
-            class="btn btn-primary"
-          >
+          <button @click="saveAppEditor" :disabled="!appEditForm.name.trim() || !appEditForm.url.trim()"
+            class="btn btn-primary">
             保存
           </button>
         </div>
@@ -422,11 +251,7 @@
     </div>
 
     <div v-if="showTrash">
-      <div
-        :style="trashSheetStyle"
-        class="macos-sheet"
-        @mousedown="trashBringToFront"
-      >
+      <div :style="trashSheetStyle" class="macos-sheet" @mousedown="trashBringToFront">
         <div class="sheet-header" @mousedown="trashStartDrag">
           <div class="sheet-title-group">
             <div class="sheet-title-icon sheet-title-icon-trash">
@@ -439,35 +264,9 @@
           </div>
           <div class="sheet-drag-bar w-10"></div>
           <div class="sheet-controls">
-            <button
-              @click="trashToggleMaximize"
-              class="sheet-control-btn"
-              title="最大化/还原"
-            >
-              <svg
-                v-if="!trashMaximized"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              >
-                <path
-                  d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
-                />
-              </svg>
-              <svg
-                v-else
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              >
-                <path
-                  d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"
-                />
-              </svg>
+            <button @click="trashToggleMaximize" class="sheet-control-btn" title="最大化/还原">
+              <Maximize v-if="!trashMaximized" :size="14" />
+              <Minimize2 v-else :size="14" />
             </button>
             <button @click="showTrash = false" class="close-button">
               <X :size="14" />
@@ -476,39 +275,24 @@
         </div>
 
         <div class="sheet-content">
-          <div
-            v-if="deletedCards.length === 0 && deletedApps.length === 0"
-            class="trash-empty"
-          >
+          <div v-if="deletedCards.length === 0 && deletedApps.length === 0" class="trash-empty">
             <p>废纸篓是空的</p>
           </div>
           <div v-else class="trash-list">
             <template v-if="deletedApps.length > 0">
-              <div
-                class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-2 mt-1"
-              >
+              <div class="text-[10px] font-bold text-slate-500 tracking-wider uppercase mb-2 mt-1">
                 图标
               </div>
-              <div
-                v-for="app in deletedApps"
-                :key="'app-' + app.id"
-                class="trash-item"
-              >
+              <div v-for="app in deletedApps" :key="'app-' + app.id" class="trash-item">
                 <div class="trash-item-info">
                   <p class="trash-item-title">{{ app.name || "无标题" }}</p>
                   <p class="trash-item-type">网页图标</p>
                 </div>
                 <div class="trash-item-actions">
-                  <button
-                    @click="restoreAppFromTrash(app.id)"
-                    class="btn-restore"
-                  >
+                  <button @click="restoreAppFromTrash(app.id)" class="btn-restore">
                     恢复
                   </button>
-                  <button
-                    @click="permanentlyDeleteAppFromTrash(app.id)"
-                    class="btn-delete"
-                  >
+                  <button @click="permanentlyDeleteAppFromTrash(app.id)" class="btn-delete">
                     彻底删除
                   </button>
                 </div>
@@ -516,17 +300,11 @@
             </template>
 
             <template v-if="deletedCards.length > 0">
-              <div
-                class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-2 mt-2"
-                :class="{ 'mt-3': deletedApps.length > 0 }"
-              >
+              <div class="text-[10px] font-bold text-slate-500 tracking-wider uppercase mb-2 mt-2"
+                :class="{ 'mt-3': deletedApps.length > 0 }">
                 卡片
               </div>
-              <div
-                v-for="card in deletedCards"
-                :key="'card-' + card.id"
-                class="trash-item"
-              >
+              <div v-for="card in deletedCards" :key="'card-' + card.id" class="trash-item">
                 <div class="trash-item-info">
                   <p class="trash-item-title">
                     {{ card.question || "无标题" }}
@@ -539,10 +317,7 @@
                   <button @click="restoreCard(card.id)" class="btn-restore">
                     恢复
                   </button>
-                  <button
-                    @click="permanentlyDeleteCard(card.id)"
-                    class="btn-delete"
-                  >
+                  <button @click="permanentlyDeleteCard(card.id)" class="btn-delete">
                     彻底删除
                   </button>
                 </div>
@@ -553,11 +328,8 @@
       </div>
     </div>
 
-    <div
-      v-if="showCategoryEditor"
-      class="macos-overlay fixed inset-0 z-[9999] flex items-center justify-center"
-      @click.self="showCategoryEditor = false"
-    >
+    <div v-if="showCategoryEditor" class="macos-overlay fixed inset-0 z-[9999] flex items-center justify-center"
+      @click.self="showCategoryEditor = false">
       <div class="macos-sheet" style="width: 440px">
         <div class="sheet-header">
           <h2 class="sheet-title">编辑分类</h2>
@@ -569,38 +341,21 @@
           <div class="form-section">
             <div class="form-row">
               <label class="form-label">分类名称</label>
-              <input
-                v-model="categoryEditForm.name"
-                type="text"
-                placeholder="例如：设计灵感"
-                class="form-input"
-              />
+              <input v-model="categoryEditForm.name" type="text" placeholder="例如：设计灵感" class="form-input" />
             </div>
             <div class="form-row">
               <label class="form-label">图标</label>
               <div class="icon-picker-grid">
-                <button
-                  v-for="preset in categoryPresetIcons"
-                  :key="preset.comp"
-                  @click="categoryEditForm.comp = preset.comp"
-                  :class="[
+                <button v-for="preset in categoryPresetIcons" :key="preset.comp"
+                  @click="categoryEditForm.comp = preset.comp" :class="[
                     'icon-picker-item',
                     {
                       'icon-picker-selected':
                         categoryEditForm.comp === preset.comp,
                     },
-                  ]"
-                  :title="preset.label"
-                >
-                  <div
-                    class="icon-picker-circle"
-                    :style="{ background: '#e2e8f0' }"
-                  >
-                    <component
-                      :is="iconComponents[preset.comp]"
-                      :size="18"
-                      class="text-slate-600"
-                    />
+                  ]" :title="preset.label">
+                  <div class="icon-picker-circle" :style="{ background: '#e2e8f0' }">
+                    <component :is="iconComponents[preset.comp]" :size="18" class="text-slate-600" />
                   </div>
                 </button>
               </div>
@@ -608,37 +363,20 @@
             <div class="form-row">
               <label class="form-label">背景色</label>
               <div class="text-icon-row">
-                <div
-                  class="text-icon-preview"
-                  :style="{ background: categoryEditForm.color }"
-                >
-                  <component
-                    v-if="categoryEditForm.comp"
-                    :is="iconComponents[categoryEditForm.comp]"
-                    :size="20"
-                    class="text-white"
-                  />
+                <div class="text-icon-preview" :style="{ background: categoryEditForm.color }">
+                  <component v-if="categoryEditForm.comp" :is="iconComponents[categoryEditForm.comp]" :size="20"
+                    class="text-white" />
                 </div>
                 <div class="text-icon-colors">
-                  <button
-                    v-for="c in categoryPresetColors"
-                    :key="c"
-                    @click="categoryEditForm.color = c"
-                    :class="[
-                      'color-swatch',
-                      { 'color-swatch-selected': categoryEditForm.color === c },
-                    ]"
-                    :style="{
-                      background: c,
-                      border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none',
-                    }"
-                  />
+                  <button v-for="c in categoryPresetColors" :key="c" @click="categoryEditForm.color = c" :class="[
+                    'color-swatch',
+                    { 'color-swatch-selected': categoryEditForm.color === c },
+                  ]" :style="{
+                    background: c,
+                    border: c === '#ffffff' ? '1px solid #e2e8f0' : 'none',
+                  }" />
                   <label class="color-picker-wrap" title="自定义颜色">
-                    <input
-                      type="color"
-                      v-model="categoryEditForm.color"
-                      class="color-picker-native"
-                    />
+                    <input type="color" v-model="categoryEditForm.color" class="color-picker-native" />
                     <Pen :size="12" />
                   </label>
                 </div>
@@ -650,11 +388,7 @@
           <button @click="showCategoryEditor = false" class="btn btn-secondary">
             取消
           </button>
-          <button
-            @click="saveCategoryEditor"
-            :disabled="!categoryEditForm.name.trim()"
-            class="btn btn-primary"
-          >
+          <button @click="saveCategoryEditor" :disabled="!categoryEditForm.name.trim()" class="btn btn-primary">
             保存
           </button>
         </div>
@@ -690,6 +424,8 @@ import {
   Video,
   Bookmark,
   Terminal,
+  Maximize,
+  Minimize2,
 } from "lucide-vue-next";
 import DesktopIcon from "../components/DesktopIcon.vue";
 import WindowFrame from "../components/WindowFrame.vue";
@@ -701,6 +437,7 @@ import ContextMenu from "../components/ContextMenu.vue";
 import { useCardStore } from "../composables/useCardStore";
 import { useSheetWindow } from "../composables/useSheetWindow";
 import { db } from "../db";
+import { useSettings } from "../composables/useSettings";
 
 const router = useRouter();
 
@@ -742,6 +479,87 @@ const currentTime = ref("");
 const currentDate = ref("");
 const showLauncher = ref(false);
 const showSetting = ref(false);
+async function handleDataChanged() {
+  await Promise.all([
+    loadApps(),
+    loadAllCards(),
+    loadCategories(),
+  ])
+  await refreshWallpaper()
+}
+const { getActiveWallpaperUrl, settings: wallpaperSettings, init } = useSettings()
+const wallpaperUrl = ref('')
+const wallpaperBgStyle = computed(() => {
+  return wallpaperUrl.value
+    ? { backgroundImage: `url("${wallpaperUrl.value}")` }
+    : {}
+})
+// ===== 工作台主题核心状态（统一跟随全局界面主题） =====
+const workbenchThemeClass = computed(() => `wb-${wallpaperSettings.value.theme}`)
+const isDarkWb = computed(() => wallpaperSettings.value.theme === 'dark')
+const blurStrength = computed(() => wallpaperSettings.value.blurStrength ?? 25)
+const barOpacity = computed(() => wallpaperSettings.value.barOpacity ?? 50)
+const reduceMotion = computed(() => wallpaperSettings.value.reduceMotion ?? false)
+const dockZoomEnabled = computed(() => wallpaperSettings.value.dockZoom ?? true)
+const showIconLabels = computed(() => wallpaperSettings.value.showIconLabels ?? true)
+
+// ===== 所有背景色全部走 computed → :style，零 CSS 变量依赖 =====
+
+// 壁纸黑色蒙层（深色模式）
+const overlayStyle = computed(() => ({
+  background: isDarkWb.value ? 'rgba(0,0,0,0.08)' : 'transparent',
+}))
+
+// 顶部导航栏
+const headerStyle = computed(() => {
+  const alpha = (barOpacity.value / 100).toFixed(2)
+  return {
+    background: isDarkWb.value
+      ? `rgba(0,0,0,${(alpha * 0.55).toFixed(2)})`
+      : `rgba(255,255,255,${alpha})`,
+    backdropFilter: `blur(${blurStrength.value}px) saturate(190%)`,
+    WebkitBackdropFilter: `blur(${blurStrength.value}px) saturate(190%)`,
+    borderBottom: isDarkWb.value
+      ? '0.5px solid rgba(255,255,255,0.08)'
+      : '0.5px solid rgba(0,0,0,0.06)',
+  }
+})
+
+// 分类栏 Dock 托底卡片
+const dockStyle = computed(() => ({
+  background: isDarkWb.value
+    ? 'rgba(0,0,0,0.28)'
+    : 'rgba(255,255,255,0.45)',
+  border: isDarkWb.value
+    ? '1px solid rgba(255,255,255,0.08)'
+    : '1px solid rgba(0,0,0,0.06)',
+  borderRadius: '16px',
+  boxShadow: isDarkWb.value
+    ? '0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2)'
+    : '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+}))
+
+// 桌面图标需要的 CSS 变量（仅图标选中态和标签颜色，通过 inline style 确保生效）
+const desktopCssVars = computed(() => ({
+  '--blur-strength': blurStrength.value + 'px',
+  '--wb-icon-label': isDarkWb.value ? '#e2e8f0' : '#e2e8f0',
+  '--wb-icon-label-shadow': isDarkWb.value ? '0 1px 3px rgba(0,0,0,0.5)' : 'none',
+  '--wb-icon-selected': isDarkWb.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+}))
+async function refreshWallpaper() {
+  await init()
+  wallpaperUrl.value = getActiveWallpaperUrl()
+}
+refreshWallpaper()
+
+watch(
+  () => [wallpaperSettings.value.wallpaperIndex, wallpaperSettings.value.customWallpaper],
+  () => { wallpaperUrl.value = getActiveWallpaperUrl() },
+  { deep: true }
+)
+
 const editorVisible = ref(false);
 const editingCardId = ref(null);
 const previewPositions = ref({});
@@ -752,6 +570,7 @@ const flippedWindows = reactive({});
 const pinnedWindows = reactive({});
 const showTrashHint = ref(false);
 const autoGridRef = ref(null);
+const dockWrapperRef = ref(null);
 const draggingAppId = ref(null);
 const dropTargetIndex = ref(-1);
 
@@ -799,32 +618,26 @@ watch(
   { immediate: true },
 );
 
-const DRAG_BAR_COLOR_MAP = {
-  emerald: "bg-emerald-50",
-  amber: "bg-amber-50",
-  purple: "bg-purple-50",
-  rose: "bg-rose-50",
-  sky: "bg-sky-50",
-  violet: "bg-violet-50",
-  teal: "bg-teal-50",
-  orange: "bg-orange-50",
-  cyan: "bg-cyan-50",
-  pink: "bg-pink-50",
-  lime: "bg-lime-50",
-  blue: "bg-blue-50",
-  slate: "bg-slate-50",
+// 颜色名称 → 调色板色值（用于无 iconColor 时的色调计算）
+const COLOR_PALETTE_MAP = {
+  emerald: '#10b981',
+  amber: '#f59e0b',
+  purple: '#8b5cf6',
+  rose: '#f43f5e',
+  sky: '#0ea5e9',
+  violet: '#7c3aed',
+  teal: '#14b8a6',
+  orange: '#f97316',
+  cyan: '#06b6d4',
+  pink: '#ec4899',
+  lime: '#84cc16',
+  blue: '#3b82f6',
+  slate: '#64748b',
 };
 
 function getWindowDragBarColor(win, isFlipped) {
-  if (isFlipped) return "bg-slate-900";
-  if (win.type !== "card") return "bg-slate-300";
-  const card = allCards.value.find((c) => c.id === win.cardId);
-  if (!card) return "bg-slate-300";
-  if (card.iconColor) return "";
-  const border = card.border || "";
-  const match = border.match(/border-t-(\w+)-/);
-  const colorKey = match ? match[1] : "emerald";
-  return DRAG_BAR_COLOR_MAP[colorKey] || "bg-emerald-50";
+  // 拖动栏不再使用 Tailwind 颜色类，改为通过 style 统一控制
+  return "";
 }
 
 function hexToRgba(hex, alpha) {
@@ -837,11 +650,36 @@ function hexToRgba(hex, alpha) {
 }
 
 function getWindowDragBarStyle(win, isFlipped) {
-  if (isFlipped) return {};
-  if (win.type !== "card") return {};
+  const dark = isDarkWb.value;
+
+  // 翻转（答案面）：与背面内容区使用完全相同的背景色
+  if (isFlipped) {
+    return { backgroundColor: 'var(--card-back-bg, #1a2332)' };
+  }
+
+  if (win.type !== "card") {
+    return { backgroundColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' };
+  }
+
   const card = allCards.value.find((c) => c.id === win.cardId);
-  if (!card || !card.iconColor) return {};
-  const rgba = hexToRgba(card.iconColor, 0.1);
+  if (!card) {
+    return { backgroundColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' };
+  }
+
+  // 有自定义 iconColor：与内容区保持完全相同的 alpha
+  if (card.iconColor) {
+    const alpha = dark ? 0.25 : 0.2;
+    const rgba = hexToRgba(card.iconColor, alpha);
+    return rgba ? { backgroundColor: rgba } : {};
+  }
+
+  // 无 iconColor：使用颜色名称对应的调色板色值
+  const border = card.border || '';
+  const match = border.match(/border-t-(\w+)-/);
+  const colorKey = match ? match[1] : 'emerald';
+  const hex = COLOR_PALETTE_MAP[colorKey] || COLOR_PALETTE_MAP.emerald;
+  const alpha = dark ? 0.18 : 0.12;
+  const rgba = hexToRgba(hex, alpha);
   return rgba ? { backgroundColor: rgba } : {};
 }
 
@@ -1137,7 +975,7 @@ async function resolveEditFavicon(urlStr) {
         ? "apple-touch-icon"
         : "favicon.ico";
       return;
-    } catch {}
+    } catch { }
   }
 }
 
@@ -1207,6 +1045,7 @@ function openCategoryFolder(cat) {
 }
 
 function handleDockHover(e, index) {
+  if (!dockZoomEnabled.value) return
   const items = document.querySelectorAll(".dock-item");
   items.forEach((item, i) => {
     if (i === index) {
@@ -1427,7 +1266,7 @@ onMounted(async () => {
   updateTime();
   setInterval(updateTime, 1000);
 
-  const dockWrapper = document.querySelector(".macos-dock");
+  const dockWrapper = dockWrapperRef.value;
   if (dockWrapper) {
     dockWrapper.addEventListener("mouseleave", resetDockScale);
   }
@@ -1468,10 +1307,12 @@ onUnmounted(() => {
 }
 
 @keyframes drop-target-pulse {
+
   0%,
   100% {
     opacity: 0.6;
   }
+
   50% {
     opacity: 1;
   }
@@ -1481,41 +1322,29 @@ onUnmounted(() => {
   background-image: url("https://images.unsplash.com/photo-1511300636408-a63a89df3482?w=1920&q=80");
   background-size: cover;
   background-position: center;
+  backdrop-filter: blur(var(--blur-strength, 25px)) saturate(190%);
+  -webkit-backdrop-filter: blur(var(--blur-strength, 25px)) saturate(190%);
 }
 
 .macos-menubar {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(25px) saturate(190%);
-  -webkit-backdrop-filter: blur(25px) saturate(190%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.3),
-    0 8px 32px rgba(0, 0, 0, 0.08);
+  /* 已迁移到卡片式顶栏 — 使用 .wb-card */
 }
 
 .macos-dock-wrapper {
-  padding: 4px;
+  /* 已迁移到卡片式 Dock */
+  padding: 0;
 }
 
 .macos-dock {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 18px;
-  border: 0.5px solid rgba(255, 255, 255, 0.3);
-  box-shadow:
-    0 0 0 0.5px rgba(0, 0, 0, 0.1),
-    0 10px 40px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* 已移除玻璃条样式 — 使用 .wb-card */
 }
 
 .dock-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding: 4px 4px 2px;
-  margin: 0 5px;
+  justify-content: center;
+  padding: 2px 3px;
   cursor: pointer;
   transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
@@ -1524,13 +1353,13 @@ onUnmounted(() => {
 .dock-icon {
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #64748b;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.2s, transform 0.15s;
 }
 
 .dock-icon:hover {
@@ -1560,6 +1389,7 @@ onUnmounted(() => {
 }
 
 @keyframes trash-pulse {
+
   0%,
   100% {
     transform: scale(1.2);
@@ -1568,6 +1398,7 @@ onUnmounted(() => {
       0 0 60px rgba(239, 68, 68, 0.3),
       0 8px 25px rgba(0, 0, 0, 0.3);
   }
+
   50% {
     transform: scale(1.25);
     box-shadow:
@@ -1604,10 +1435,12 @@ onUnmounted(() => {
 }
 
 @keyframes hint-bounce {
+
   0%,
   100% {
     transform: translateX(-50%) translateY(0);
   }
+
   50% {
     transform: translateX(-50%) translateY(-4px);
   }
@@ -1666,6 +1499,7 @@ onUnmounted(() => {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1683,8 +1517,7 @@ onUnmounted(() => {
 }
 
 .dock-label {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
   margin-top: 2px;
   text-align: center;
   max-width: 56px;
@@ -1693,16 +1526,37 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+.wb-light .dock-label {
+  color: #FFF;
+  text-shadow: none;
+}
+
+/* .wb-light .dock-label {
+  text-shadow: none;
+} */
+
+.wb-dark .dock-label {
+  color: #e2e8f0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
 .dock-separator {
   width: 1px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 4px;
+  height: 28px;
+  margin: 0 2px;
   align-self: center;
 }
 
+.wb-light .dock-separator {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.wb-dark .dock-separator {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .macos-overlay {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--overlay-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -1731,53 +1585,59 @@ onUnmounted(() => {
 .sheet-header,
 .sheet-content,
 .sheet-footer {
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--panel-bg);
   backdrop-filter: blur(30px) saturate(190%);
   -webkit-backdrop-filter: blur(30px) saturate(190%);
 }
+
 .sheet-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 0.5px solid var(--border-subtle);
   flex-shrink: 0;
   cursor: grab;
   user-select: none;
 }
+
 .sheet-header:active {
   cursor: grabbing;
 }
+
 .sheet-controls {
   display: flex;
   gap: 6px;
   align-items: center;
 }
+
 .sheet-drag-bar {
-  /* width: 24px; */
   height: 4px;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--border-input);
   flex-shrink: 0;
   margin: -30px 0 0px 0;
 }
+
 .sheet-control-btn {
   width: 26px;
   height: 26px;
   border-radius: 6px;
   border: none;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--kbd-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #5a5e64;
+  color: var(--text-tertiary);
 }
+
 .sheet-control-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1a1a2e;
+  background: var(--button-secondary-bg);
+  color: var(--text-primary);
 }
+
 .sheet-control-btn svg {
   width: 13px;
   height: 13px;
@@ -1797,11 +1657,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
 }
+
 .sheet-title-icon svg {
   width: 15px;
   height: 15px;
   color: white;
 }
+
 .sheet-title-icon-trash {
   background: linear-gradient(135deg, #64748b, #475569);
   box-shadow: 0 2px 10px rgba(71, 85, 105, 0.25);
@@ -1810,15 +1672,16 @@ onUnmounted(() => {
 .sheet-title-text h2 {
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text-primary);
   line-height: 1.2;
 }
+
 .sheet-title-text span {
   display: block;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.12em;
-  color: #8b92a5;
+  color: var(--text-placeholder);
   margin-top: 1px;
 }
 
@@ -1826,18 +1689,19 @@ onUnmounted(() => {
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--kbd-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #5a5e64;
+  color: var(--text-tertiary);
   border: none;
 }
+
 .close-button:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1a1a2e;
+  background: var(--button-secondary-bg);
+  color: var(--text-primary);
 }
 
 .sheet-content {
@@ -1850,7 +1714,7 @@ onUnmounted(() => {
 .trash-empty {
   text-align: center;
   padding: 48px 0;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -1866,11 +1730,12 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.45);
+  background: var(--input-bg);
   transition: background 0.15s ease;
 }
+
 .trash-item:hover {
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--input-bg-hover);
 }
 
 .trash-item-info {
@@ -1881,7 +1746,7 @@ onUnmounted(() => {
 .trash-item-title {
   font-size: 13px;
   font-weight: 500;
-  color: #1a1a2e;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1889,7 +1754,7 @@ onUnmounted(() => {
 
 .trash-item-type {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -1914,20 +1779,22 @@ onUnmounted(() => {
 }
 
 .btn-restore {
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--button-secondary-bg);
+  color: var(--text-label);
 }
+
 .btn-restore:hover {
-  background: #e2e8f0;
+  background: var(--button-secondary-hover);
 }
 
 .btn-delete {
-  background: rgba(239, 68, 68, 0.06);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid var(--danger-light);
 }
+
 .btn-delete:hover {
-  background: #ef4444;
+  background: var(--danger);
   color: white;
 }
 
@@ -1946,7 +1813,7 @@ onUnmounted(() => {
 .form-label {
   font-size: 11px;
   font-weight: 600;
-  color: #424245;
+  color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
 
@@ -1954,20 +1821,22 @@ onUnmounted(() => {
   font-family: inherit;
   font-size: 13px;
   padding: 9px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-input);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.6);
-  color: #1a1a2e;
+  background: var(--input-bg);
+  color: var(--text-primary);
   transition: all 0.15s ease;
   outline: none;
 }
+
 .form-input::placeholder {
-  color: #94a3b8;
+  color: var(--text-placeholder);
 }
+
 .form-input:focus {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  background: var(--input-bg-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .icon-mode-tabs {
@@ -1985,8 +1854,8 @@ onUnmounted(() => {
   padding: 7px 12px;
   border-radius: 8px;
   border: none;
-  background: rgba(0, 0, 0, 0.06);
-  color: #5a5e64;
+  background: var(--segmented-bg);
+  color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -1995,14 +1864,14 @@ onUnmounted(() => {
 }
 
 .icon-mode-tab:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #424245;
+  background: var(--button-secondary-bg);
+  color: var(--text-secondary);
 }
 
 .icon-mode-tab-active {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  border-color: var(--accent);
+  background: var(--accent-strong);
+  color: var(--accent);
 }
 
 .favicon-section {
@@ -2021,11 +1890,11 @@ onUnmounted(() => {
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-input);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--input-bg);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -2037,7 +1906,7 @@ onUnmounted(() => {
 }
 
 .favicon-preview-placeholder {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .favicon-info {
@@ -2049,12 +1918,12 @@ onUnmounted(() => {
 .favicon-label {
   font-size: 13px;
   font-weight: 500;
-  color: #1a1a2e;
+  color: var(--text-primary);
 }
 
 .favicon-hint {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .favicon-colors {
@@ -2108,28 +1977,28 @@ onUnmounted(() => {
 }
 
 .color-swatch-selected {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .color-picker-wrap {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px dashed rgba(0, 0, 0, 0.12);
+  border: 2px dashed var(--border-input);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #5a5e64;
+  color: var(--text-tertiary);
   position: relative;
   transition: all 0.15s ease;
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--input-bg);
 }
 
 .color-picker-wrap:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .color-picker-native {
@@ -2146,7 +2015,7 @@ onUnmounted(() => {
   justify-content: flex-end;
   gap: 10px;
   padding: 14px 20px;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.35);
+  border-top: 0.5px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
@@ -2162,22 +2031,22 @@ onUnmounted(() => {
 }
 
 .btn-secondary {
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--button-secondary-bg);
+  color: var(--text-label);
 }
 
 .btn-secondary:hover {
-  background: #e2e8f0;
+  background: var(--button-secondary-hover);
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: var(--accent);
   color: white;
   box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: var(--accent-hover);
 }
 
 .btn-primary:disabled {
@@ -2204,17 +2073,17 @@ onUnmounted(() => {
   padding: 2px;
   cursor: pointer;
   transition: all 0.15s ease;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--input-bg);
 }
 
 .icon-picker-item:hover {
-  border-color: rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.75);
+  border-color: var(--border-input);
+  background: var(--input-bg-hover);
 }
 
 .icon-picker-selected {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.08);
+  border-color: var(--accent);
+  background: var(--accent-light);
 }
 
 .icon-picker-circle {
@@ -2235,6 +2104,7 @@ onUnmounted(() => {
   cursor: nwse-resize;
   z-index: 10;
 }
+
 .sheet-resize-handle::before {
   content: "";
   position: absolute;
@@ -2242,21 +2112,98 @@ onUnmounted(() => {
   right: 4px;
   width: 8px;
   height: 8px;
-  border-right: 1.5px solid rgba(0, 0, 0, 0.12);
-  border-bottom: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-right: 1.5px solid var(--border-input);
+  border-bottom: 1.5px solid var(--border-input);
 }
 
 .sheet-content::-webkit-scrollbar {
   width: 5px;
 }
+
 .sheet-content::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .sheet-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--border-input);
   border-radius: 10px;
 }
+
 .sheet-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--separator);
+}
+
+/* 顶部栏 compact 按钮 — 直接跟随 wb-light/wb-dark，不依赖 CSS 变量 */
+.menubar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-size: 11px;
+}
+
+.wb-light .menubar-btn {
+  color: #1e293b;
+}
+
+.wb-dark .menubar-btn {
+  color: #e2e8f0;
+}
+
+.wb-light .menubar-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #3b82f6;
+}
+
+.wb-dark .menubar-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #60a5fa;
+}
+
+.menubar-text {
+  /* handled by parent class */
+}
+
+.wb-light .menubar-text {
+  color: #1e293b;
+}
+
+.wb-dark .menubar-text {
+  color: #e2e8f0;
+}
+
+.wb-light .menubar-text-muted {
+  color: #64748b;
+}
+
+.wb-dark .menubar-text-muted {
+  color: #94a3b8;
+}
+
+.menubar-sep {
+  width: 1px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.wb-light .menubar-sep {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.wb-dark .menubar-sep {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 减少动画 */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
 }
 </style>

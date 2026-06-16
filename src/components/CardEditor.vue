@@ -459,14 +459,13 @@ onUnmounted(() => {
   height: 90vh;
   border-radius: 16px;
   /* 亮色版磨砂玻璃 */
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--editor-main);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border-subtle);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.08),
     0 1px 2px rgba(0, 0, 0, 0.04),
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.9),
     inset 0 -0.5px 0 rgba(0, 0, 0, 0.03);
 }
 
@@ -478,7 +477,7 @@ onUnmounted(() => {
 
 /* 暗色版主体 */
 .editor-sheet--dark {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--editor-dark-main);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border-color: rgba(255, 255, 255, 0.08);
@@ -497,13 +496,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   shrink: 0;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.3);
+  border-bottom: 0.5px solid var(--border-subtle);
+  background: var(--editor-header);
 }
 
 .editor-header--dark {
   border-bottom-color: rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--editor-dark-header);
 }
 
 /* ===== 按钮（通用） ===== */
@@ -698,14 +697,14 @@ onUnmounted(() => {
 /* ===== 左侧面板（编辑器） ===== */
 .editor-panel-left {
   width: 50%;
-  border-right: 0.5px solid rgba(0, 0, 0, 0.06);
+  border-right: 0.5px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--editor-panel);
 }
 .editor-panel-left--dark {
   border-right-color: rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--editor-dark-panel);
 }
 
 /* ===== 右侧面板（预览区） ===== */
@@ -713,10 +712,10 @@ onUnmounted(() => {
   width: 50%;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--editor-panel2);
 }
 .editor-panel-right--dark {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--editor-dark-panel2);
 }
 
 /* ===== 标题栏 ===== */
@@ -726,17 +725,17 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.45);
+  border-bottom: 0.5px solid var(--border-subtle);
+  background: var(--editor-titlebar);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: #94a3b8;
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 .editor-panel-titlebar--dark {
   border-bottom-color: rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.45);
+  background: var(--editor-dark-titlebar);
   color: #64748b;
 }
 
@@ -747,12 +746,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 2px;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.6);
+  border-bottom: 0.5px solid var(--border-subtle);
+  background: var(--editor-toolbar);
 }
 .editor-toolbar--dark {
   border-bottom-color: rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.35);
+  background: var(--editor-dark-toolbar);
 }
 
 /* 工具栏按钮 */
@@ -800,13 +799,13 @@ onUnmounted(() => {
   justify-content: space-between;
   font-size: 12px;
   shrink: 0;
-  border-top: 0.5px solid rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.3);
-  color: #94a3b8;
+  border-top: 0.5px solid var(--border-subtle);
+  background: var(--editor-footer);
+  color: var(--text-muted);
 }
 .editor-footer--dark {
   border-top-color: rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--editor-dark-footer);
   color: #64748b;
 }
 

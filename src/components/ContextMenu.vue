@@ -58,14 +58,13 @@ onUnmounted(() => {
 .macos-menu {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--contextmenu-bg);
   backdrop-filter: blur(25px) saturate(190%);
   -webkit-backdrop-filter: blur(25px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.3),
-    0 8px 32px rgba(0, 0, 0, 0.08);
+    0 8px 32px rgba(0, 0, 0, 0.12);
   animation: menuAppear 0.15s ease-out;
 }
 
@@ -87,7 +86,7 @@ onUnmounted(() => {
   width: 100%;
   padding: 6px 14px;
   font-size: 12px;
-  color: #334155;
+  color: var(--text-label);
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -97,16 +96,16 @@ onUnmounted(() => {
 }
 
 .menu-item:hover {
-  background: #3b82f6;
+  background: var(--accent);
   color: white;
 }
 
 .menu-item-danger {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .menu-item-danger:hover {
-  background: #ef4444;
+  background: var(--danger);
   color: white;
 }
 
@@ -122,7 +121,7 @@ onUnmounted(() => {
 
 .menu-divider {
   height: 0.5px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--separator);
   margin: 4px 10px;
 }
 </style>

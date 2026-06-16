@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { db } from '../db'
 import { nextZIndex } from './useZIndex'
+import { useSettings } from './useSettings'
 
 const apps = ref([])
 const categories = ref([])
@@ -123,18 +124,12 @@ async function loadDeletedApps() {
   return await db.apps.filter(app => app.deleted === true).toArray()
 }
 
-const desktopLayoutMode = ref('auto')
-
-async function loadDesktopSettings() {
-  const setting = await db.settings.get('desktopLayoutMode')
-  if (setting) {
-    desktopLayoutMode.value = setting.value
-  }
-}
+// desktopLayoutMode 与 useSettings 同步
+const { settings: layoutSettings, set: setLayoutSetting } = useSettings()
+const desktopLayoutMode = computed(() => layoutSettings.value.layoutMode || 'auto')
 
 async function setDesktopLayoutMode(mode) {
-  desktopLayoutMode.value = mode
-  await db.settings.put({ key: 'desktopLayoutMode', value: mode })
+  setLayoutSetting('layoutMode', mode)
   if (mode === 'auto') {
     await autoArrangeApps()
   }
@@ -272,9 +267,10 @@ async function updateCard(cardId, cardData) {
 }
 
 async function deleteCard(cardId) {
+  // 先关窗口，再删数据，避免"卡片不存在"闪现
+  closeWindow(`card-${cardId}`)
   await db.cards.update(Number(cardId), { categoryId: -1 })
   await loadAllCards()
-  closeWindow(`card-${cardId}`)
 }
 
 function selectIcon(iconId) {
@@ -289,7 +285,6 @@ async function initDesktop() {
   await loadCategories()
   await loadAllCards()
   await loadApps()
-  await loadDesktopSettings()
   await ensureReviewIcon()
 }
 
@@ -493,7 +488,6 @@ export function useCardStore() {
     createCategory,
     deleteCategory,
     updateCategory,
-    loadDesktopSettings,
     setDesktopLayoutMode,
     updateAppPosition,
     autoArrangeApps,

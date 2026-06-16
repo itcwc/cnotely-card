@@ -121,8 +121,8 @@ export function useSheetWindow(options = {}) {
       if (savedState.value) {
         x.value = savedState.value.x
         y.value = savedState.value.y
-        width.value = savedState.value.width
-        height.value = savedState.value.height
+        width.value = savedState.value.w
+        height.value = savedState.value.h
       }
       isMaximized.value = false
     } else {

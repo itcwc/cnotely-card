@@ -31,30 +31,8 @@
           class="sheet-control-btn"
           title="最大化/还原"
         >
-          <svg
-            v-if="!isMaximized"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          >
-            <path
-              d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
-            />
-          </svg>
-          <svg
-            v-else
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          >
-            <path
-              d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"
-            />
-          </svg>
+          <Maximize v-if="!isMaximized" :size="14" />
+          <Minimize2 v-else :size="14" />
         </button>
         <button @click="emit('close')" class="sheet-close" title="关闭">
           <svg
@@ -541,6 +519,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { Maximize, Minimize2 } from "lucide-vue-next";
 import {
   Globe,
   BookOpen,
@@ -863,7 +842,7 @@ function handleCreate() {
 .sheet-header,
 .sheet-body,
 .sheet-footer {
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--panel-bg);
   backdrop-filter: blur(30px) saturate(190%);
   -webkit-backdrop-filter: blur(30px) saturate(190%);
 }
@@ -872,7 +851,7 @@ function handleCreate() {
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.35);
+  border-bottom: 0.5px solid var(--border-subtle);
   flex-shrink: 0;
   cursor: grab;
   user-select: none;
@@ -1011,7 +990,7 @@ function handleCreate() {
   transition: opacity 0.2s ease;
 }
 .type-card:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--input-bg);
   transform: scale(1.02);
 }
 .type-card:hover::before {
@@ -1169,12 +1148,12 @@ function handleCreate() {
   outline: none;
 }
 .form-input::placeholder {
-  color: #94a3b8;
+  color: #64748b;
 }
 .form-input:focus {
-  background: rgba(255, 255, 255, 0.5);
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  background: var(--input-bg-hover);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 .icon-mode-tabs {
@@ -1199,12 +1178,12 @@ function handleCreate() {
   font-family: inherit;
 }
 .icon-mode-tab:hover {
-  background: rgba(255, 255, 255, 0.3);
-  color: #424245;
+  background: var(--input-bg);
+  color: var(--text-secondary);
 }
 .icon-mode-tab.active {
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  background: var(--accent-strong);
+  color: var(--accent);
 }
 .icon-mode-tab svg {
   width: 14px;
@@ -1237,7 +1216,7 @@ function handleCreate() {
   object-fit: contain;
 }
 .favicon-placeholder {
-  color: #94a3b8;
+  color: #64748b;
 }
 .favicon-placeholder svg {
   width: 18px;
@@ -1255,7 +1234,7 @@ function handleCreate() {
 }
 .favicon-info-hint {
   font-size: 10px;
-  color: #94a3b8;
+  color: #64748b;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -1353,7 +1332,7 @@ function handleCreate() {
   transition: all 0.15s ease;
 }
 .icon-picker-item:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--input-bg);
 }
 .icon-picker-item.active {
   background: rgba(139, 92, 246, 0.12);
@@ -1382,7 +1361,7 @@ function handleCreate() {
   transition: all 0.15s ease;
 }
 .cat-select-trigger:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--input-bg);
 }
 .cat-dot {
   width: 20px;
@@ -1405,7 +1384,7 @@ function handleCreate() {
   text-align: left;
 }
 .cat-select-arrow {
-  color: #94a3b8;
+  color: #64748b;
   flex-shrink: 0;
 }
 .cat-select-arrow svg {
@@ -1416,7 +1395,7 @@ function handleCreate() {
 .cat-dropdown {
   position: fixed;
   z-index: 99999;
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--dropdown-bg);
   border: none;
   border-radius: 12px;
   box-shadow:
@@ -1467,7 +1446,7 @@ function handleCreate() {
 }
 .hint-text {
   font-size: 11px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .sheet-footer {
@@ -1475,7 +1454,7 @@ function handleCreate() {
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.35);
+  border-top: 0.5px solid var(--border-subtle);
   flex-shrink: 0;
 }
 .footer-hint {

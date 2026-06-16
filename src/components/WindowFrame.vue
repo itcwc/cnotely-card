@@ -45,7 +45,7 @@
       </div>
       
       <div class="flex-1 flex items-center justify-center">
-        <span class="text-[13px] font-medium text-slate-700 truncate">{{ title }}</span>
+        <span class="text-[13px] font-medium truncate" :class="darkDragBar ? 'text-slate-200' : 'text-slate-700'">{{ title }}</span>
       </div>
       
       <div class="w-[52px]"></div>
@@ -245,12 +245,10 @@ defineExpose({
 .macos-window {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: rgba(255, 255, 255, 0.99);
+  background: var(--window-bg);
   backdrop-filter: blur(30px) saturate(190%);
   -webkit-backdrop-filter: blur(30px) saturate(190%);
-  box-shadow: 
-    0 22px 70px 4px rgba(0, 0, 0, 0.28),
-    0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--window-shadow);
   transition: transform 0.6s ease-in-out, box-shadow 0.2s ease;
 }
 
@@ -267,12 +265,12 @@ defineExpose({
 }
 
 .macos-window-inactive .macos-titlebar {
-  background: rgba(246, 246, 246, 0.98);
+  background: var(--window-bg-inactive);
 }
 
 .macos-titlebar {
-  background: linear-gradient(180deg, #e8e8e8 0%, #f6f6f6 100%);
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  background: var(--window-titlebar);
+  border-bottom: 0.5px solid var(--window-divider);
   border-radius: 10px 10px 0 0;
 }
 

@@ -17,7 +17,7 @@
         <img v-else :src="app.icon" :alt="app.name" draggable="false" class="w-9 h-9 object-contain pointer-events-none" />
       </div>
     </div>
-    <span class="icon-label text-[11px] font-medium text-white/90 truncate w-full text-center drop-shadow-md px-1">
+    <span class="icon-label text-[11px] font-medium truncate w-full text-center drop-shadow-md px-1">
       {{ app.name }}
     </span>
   </div>
@@ -229,13 +229,13 @@ function startDrag(e) {
 }
 
 .macos-icon-selected {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--wb-icon-selected);
   border-radius: 8px;
 }
 
 .macos-icon-selected .icon-label {
   background: transparent;
-  color: white;
+  color: var(--wb-icon-label);
 }
 
 .macos-icon-dragging {
@@ -251,7 +251,8 @@ function startDrag(e) {
 }
 
 .icon-label {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  color: var(--wb-icon-label);
+  text-shadow: var(--wb-icon-label-shadow, 0 1px 2px rgba(0, 0, 0, 0.5));
   line-height: 1.4;
   max-height: 28px;
 }

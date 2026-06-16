@@ -171,18 +171,26 @@
       <!-- Main content -->
       <main class="flex-1 flex flex-col items-center justify-center p-6 relative">
 
-        <!-- QA Card (flip) -->
-        <div v-if="!isComplete && !isArticleCard" class="relative perspective-1000" :style="cardSize">
+        <!-- QA Card (3D flip) -->
+        <div v-if="!isComplete && !isArticleCard" class="relative" :style="{ ...cardSize, perspective: settings.flipPerspective + 'px' }">
 
           <div
             :class="[
-              'absolute inset-0 w-full h-full transform-style-3d transition-transform duration-500 cursor-pointer z-30',
-              { 'rotate-y-180': isFlipped },
+              'absolute inset-0 w-full h-full cursor-pointer z-30',
+              settings.flip3d ? 'transform-style-3d' : '',
+              flipContainerClass,
               slideDirection,
             ]"
+            :style="{ transition: `transform ${settings.flipSpeed}ms cubic-bezier(0.4,0,0.2,1)` }"
             @click="flipCurrentCard"
           >
-            <div class="absolute inset-0 bg-slate-900 border border-slate-800 rounded-[10px] p-6 shadow-2xl shadow-black/80 backface-hidden flex flex-col justify-between border-t-5" :style="currentCard.iconColor ? { borderTopColor: currentCard.iconColor } : {}">
+            <div
+              :class="[
+                'absolute inset-0 bg-slate-900 border border-slate-800 rounded-[10px] p-6 shadow-2xl shadow-black/80 flex flex-col justify-between border-t-5',
+                settings.flip3d ? 'backface-hidden' : '',
+              ]"
+              :style="[currentCard.iconColor ? { borderTopColor: currentCard.iconColor } : {}, flipFrontStyle]"
+            >
               <div class="flex-1 flex flex-col overflow-hidden">
                 <div class="flex justify-between items-center text-xs text-slate-500 mb-3 shrink-0">
                   <span class="flex items-center gap-1"><HelpCircle :size="14" class="text-blue-400" /> {{ currentCard.tag || '#未归类' }}</span>
@@ -195,7 +203,13 @@
               </div>
             </div>
 
-            <div class="absolute inset-0 bg-slate-900 border border-slate-800 rounded-[10px] p-6 shadow-2xl shadow-black/80 backface-hidden rotate-y-180 flex flex-col justify-between border-t-5" :style="currentCard.iconColor ? { borderTopColor: currentCard.iconColor } : { borderTopColor: '#10b981' }">
+            <div
+              :class="[
+                'absolute inset-0 bg-slate-900 border border-slate-800 rounded-[10px] p-6 shadow-2xl shadow-black/80 flex flex-col justify-between border-t-5',
+                settings.flip3d ? 'backface-hidden rotate-y-180' : '',
+              ]"
+              :style="[currentCard.iconColor ? { borderTopColor: currentCard.iconColor } : { borderTopColor: '#10b981' }, flipBackStyle]"
+            >
               <div class="flex-1 flex flex-col overflow-hidden">
                 <div class="flex justify-between items-center text-xs text-slate-500 mb-3 shrink-0">
                   <span class="flex items-center gap-1"><CheckCircle2 :size="14" class="text-emerald-400" /> ANSWER</span>
@@ -335,6 +349,7 @@ import { useRouter } from 'vue-router'
 import { Marked } from 'marked'
 import { ArrowLeft, HelpCircle, CheckCircle2, Link, X, Check, PartyPopper, Zap, Lightbulb, Timer, RotateCcw, Play, Pause, PanelLeftClose, PanelLeftOpen, ChevronRight, Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal, Layers, FileText, AlertTriangle } from 'lucide-vue-next'
 import { useCardStore } from '../composables/useCardStore'
+import { useSettings } from '../composables/useSettings'
 import { db } from '../db'
 import { usePomodoro } from '../composables/usePomodoro'
 
@@ -344,6 +359,7 @@ const iconComponents = { Globe, BookOpen, MessageSquare, Camera, Music, Code2, P
 
 const router = useRouter()
 const { reviewDeck, categories, allCards, initDesktop, updateCard, reviewCard, loadAllCards } = useCardStore()
+const { settings } = useSettings()
 
 const deck = computed(() => reviewDeck.value.length > 0 ? reviewDeck.value : [])
 
@@ -461,6 +477,30 @@ const cardSize = computed(() => {
   const w = customWidth.value || currentCard.value.windowWidth || (isArticleCard.value ? 350 : 310)
   const h = customHeight.value || currentCard.value.windowHeight || (isArticleCard.value ? 380 : 220)
   return { width: `${w}px`, height: `${h}px` }
+})
+
+// 翻转动画样式（连接设置）
+const flipContainerClass = computed(() => {
+  if (!settings.value.flip3d) return ''
+  return isFlipped.value ? 'rotate-y-180' : ''
+})
+
+const flipFrontStyle = computed(() => {
+  if (settings.value.flip3d) return {}
+  return {
+    opacity: isFlipped.value ? 0 : 1,
+    pointerEvents: isFlipped.value ? 'none' : 'auto',
+    transition: `opacity ${settings.value.flipSpeed}ms cubic-bezier(0.4,0,0.2,1)`,
+  }
+})
+
+const flipBackStyle = computed(() => {
+  if (settings.value.flip3d) return {}
+  return {
+    opacity: isFlipped.value ? 1 : 0,
+    pointerEvents: isFlipped.value ? 'auto' : 'none',
+    transition: `opacity ${settings.value.flipSpeed}ms cubic-bezier(0.4,0,0.2,1)`,
+  }
 })
 
 const displaySource = computed(() => {
