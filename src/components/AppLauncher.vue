@@ -425,7 +425,7 @@
             <Teleport to="body">
               <div
                 v-if="showCategoryDropdown"
-                class="cat-dropdown"
+                :class="['cat-dropdown', shouldUseDarkTheme ? 'cat-dropdown--dark' : '']"
                 :style="dropdownPosition"
                 ref="teleportedDropdownRef"
               >
@@ -495,7 +495,7 @@
     <footer class="sheet-footer">
       <div class="footer-hint"><kbd>Esc</kbd> {{ $t('common.close') }} · <kbd>Enter</kbd> {{ $t('common.create') }}</div>
       <div class="footer-actions">
-        <button @click="emit('close')" class="btn btn-cancel">{{ $t('common.cancel') }}</button>/button>
+        <button @click="emit('close')" class="btn btn-cancel">{{ $t('common.cancel') }}</button>
         <button
           @click="handleCreate"
           :disabled="!canCreate"
@@ -1638,19 +1638,24 @@ function handleCreate() {
   color: #94a3b8;
 }
 
+.app-launcher--dark .cat-select-trigger {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.app-launcher--dark .cat-select-trigger:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .app-launcher--dark .cat-select-label {
   color: #e2e8f0;
 }
 
-.app-launcher--dark .cat-dropdown {
+.cat-dropdown--dark {
   background: var(--contextmenu-bg);
 }
-
-.app-launcher--dark .cat-dropdown-item {
+.cat-dropdown--dark .cat-dropdown-item {
   color: #cbd5e1;
 }
-
-.app-launcher--dark .cat-dropdown-item:hover {
+.cat-dropdown--dark .cat-dropdown-item:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 </style>

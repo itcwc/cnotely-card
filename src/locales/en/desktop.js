@@ -5,6 +5,12 @@ export default {
   free: 'Free',
   settings: 'Settings',
   clear: 'Clear',
+  editLink: 'Edit Link',
+  appName: 'App Name',
+  linkUrl: 'URL',
+  webIcon: 'Web Icon',
+  textIcon: 'Text Icon',
+  autoFetch: 'Auto Fetch',
   form: {
     categoryName: 'Category Name',
     icon: 'Icon',
@@ -27,6 +33,10 @@ export default {
     gotIt: 'Got it',
     restore: 'Restore',
     permanentDelete: 'Permanently Delete',
+    iconGroup: 'Icons',
+    cardGroup: 'Cards',
+    articleCard: 'Article',
+    memoryCard: 'Memory',
     maximizeRestore: 'Maximize/Restore',
   },
   contextMenu: {
@@ -50,6 +60,7 @@ export default {
     video: 'Video',
     favorite: 'Favorite',
     tool: 'Tool',
+    calendar: 'Calendar',
   },
   dateFormat: {
     format: '{weekday}, {month}/{day}',

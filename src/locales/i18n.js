@@ -39,7 +39,10 @@ function t(key, params = {}) {
     if (val == null) return key
     val = val[k]
   }
-  if (typeof val !== 'string') return key
+  // null/undefined → key not found; plain object → intermediate node; array/number/boolean → valid leaf
+  if (val == null) return key
+  if (typeof val === 'object' && !Array.isArray(val)) return key
+  if (typeof val !== 'string') return val
   return val.replace(/\{(\w+)\}/g, (_, m) =>
     params[m] !== undefined ? params[m] : `{${m}}`
   )

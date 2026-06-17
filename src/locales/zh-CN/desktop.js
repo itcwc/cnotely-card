@@ -5,6 +5,12 @@ export default {
   free: '自由',
   settings: '设置',
   clear: '清理',
+  editLink: '编辑链接',
+  appName: '应用名称',
+  linkUrl: '链接地址',
+  webIcon: '网页图标',
+  textIcon: '文字图标',
+  autoFetch: '自动获取',
   form: {
     categoryName: '分类名称',
     icon: '图标',
@@ -54,6 +60,7 @@ export default {
     video: '视频',
     favorite: '收藏',
     tool: '工具',
+    calendar: '日历',
   },
   dateFormat: {
     format: '{month}月{day}日 {weekday}',

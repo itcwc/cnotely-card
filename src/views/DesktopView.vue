@@ -141,14 +141,28 @@
     <ContextMenu v-if="contextMenu.visible" :x="contextMenu.x" :y="contextMenu.y" :items="contextMenu.items"
       @close="contextMenu.visible = false" @select="handleContextMenuSelect" />
 
-    <div v-if="showAppEditor" class="macos-overlay fixed inset-0 z-[9999] flex items-center justify-center"
-      @click.self="showAppEditor = false">
-      <div class="macos-sheet" style="width: 440px">
-        <div class="sheet-header">
-          <h2 class="sheet-title">{{ $t('desktop.editLink') || '编辑链接' }}</h2>
-          <button @click="showAppEditor = false" class="close-button">
-            <X :size="14" />
-          </button>
+    <div v-if="showAppEditor">
+      <div :style="editorSheetStyle" class="macos-sheet" @mousedown="editorBringToFront">
+        <div class="sheet-header" @mousedown="editorStartDrag">
+          <div class="sheet-title-group">
+            <div class="sheet-title-icon sheet-title-icon-edit">
+              <Pen :size="14" />
+            </div>
+            <div class="sheet-title-text">
+              <h2>{{ $t('desktop.editLink') }}</h2>
+              <span>LINK EDITOR</span>
+            </div>
+          </div>
+          <div class="sheet-drag-bar w-10"></div>
+          <div class="sheet-controls">
+            <button @click="editorToggleMaximize" class="sheet-control-btn" :title="$t('common.maximizeRestore')">
+              <Maximize v-if="!editorMaximized" :size="14" />
+              <Minimize2 v-else :size="14" />
+            </button>
+            <button @click="showAppEditor = false" class="sheet-close" :title="$t('common.close')">
+              <X :size="14" />
+            </button>
+          </div>
         </div>
 
         <div class="sheet-content">
@@ -239,13 +253,16 @@
           </div>
         </div>
         <div class="sheet-footer">
-          <button @click="showAppEditor = false" class="btn btn-secondary">
-            {{ $t('common.cancel') }}
-          </button>
-          <button @click="saveAppEditor" :disabled="!appEditForm.name.trim() || !appEditForm.url.trim()"
-            class="btn btn-primary">
-            {{ $t('common.save') }}
-          </button>
+          <div class="footer-hint"><kbd>Enter</kbd> {{ $t('common.save') }}</div>
+          <div class="footer-actions">
+            <button @click="showAppEditor = false" class="btn btn-cancel">
+              {{ $t('common.cancel') }}
+            </button>
+            <button @click="saveAppEditor" :disabled="!appEditForm.name.trim() || !appEditForm.url.trim()"
+              class="btn btn-create">
+              {{ $t('common.save') }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1204,6 +1221,22 @@ const {
   id: "trash",
 });
 
+const {
+  sheetStyle: editorSheetStyle,
+  isMaximized: editorMaximized,
+  bringToFront: editorBringToFront,
+  startDrag: editorStartDrag,
+  toggleMaximize: editorToggleMaximize,
+} = useSheetWindow({
+  defaultWidth: 440,
+  defaultHeight: 480,
+  minWidth: 380,
+  minHeight: 360,
+  maxWidth: 600,
+  maxHeight: 650,
+  id: "app-editor",
+});
+
 const showCategoryEditor = ref(false);
 const editingCategory = ref(null);
 const categoryEditForm = ref({
@@ -1612,14 +1645,23 @@ onUnmounted(() => {
 }
 
 .sheet-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 14px 20px;
   border-bottom: 0.5px solid var(--border-subtle);
   flex-shrink: 0;
   cursor: grab;
   user-select: none;
+}
+.sheet-title-group {
+  min-width: 0;
+}
+.sheet-drag-bar {
+  justify-self: center;
+}
+.sheet-controls {
+  justify-self: end;
 }
 
 .sheet-header:active {
@@ -1690,6 +1732,11 @@ onUnmounted(() => {
   box-shadow: 0 2px 10px rgba(71, 85, 105, 0.25);
 }
 
+.sheet-title-icon-edit {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.25);
+}
+
 .sheet-title-text h2 {
   font-size: 14px;
   font-weight: 700;
@@ -1723,6 +1770,24 @@ onUnmounted(() => {
 .close-button:hover {
   background: var(--button-secondary-bg);
   color: var(--text-primary);
+}
+
+.sheet-close {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #5a5e64;
+}
+.sheet-close:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1a1a2e;
 }
 
 .sheet-content {
@@ -2033,11 +2098,32 @@ onUnmounted(() => {
 
 .sheet-footer {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
   padding: 14px 20px;
   border-top: 0.5px solid var(--border-subtle);
   flex-shrink: 0;
+}
+
+.footer-hint {
+  font-size: 10px;
+  color: #5a5e64;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.footer-hint kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border: none;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 6px;
 }
 
 .btn {
@@ -2049,6 +2135,28 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.15s ease;
   border: none;
+}
+
+.btn-cancel {
+  background: rgba(0, 0, 0, 0.06);
+  color: #424245;
+}
+.btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #1a1a2e;
+}
+
+.btn-create {
+  background: #3b82f6;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+}
+.btn-create:hover {
+  background: #2563eb;
+}
+.btn-create:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .btn-secondary {

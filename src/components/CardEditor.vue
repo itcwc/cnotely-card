@@ -618,9 +618,11 @@ onUnmounted(() => {
 .editor-cat-btn--dark {
   background: rgba(59, 130, 246, 0.12);
   color: #93c5fd;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.22);
 }
 .editor-cat-btn--dark:hover {
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.22);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
 }
 
 /* ===== 分类下拉菜单 ===== */
@@ -642,11 +644,13 @@ onUnmounted(() => {
     0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .editor-dropdown--dark {
-  background: rgba(30, 41, 59, 0.9);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(26, 30, 44, 0.94);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.3),
-    0 1px 3px rgba(0, 0, 0, 0.2);
+    0 4px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .editor-dropdown-item {
