@@ -6,7 +6,7 @@
   >
     <!-- 卡片不存在 -->
     <div v-if="!card" class="flex-1 flex items-center justify-center text-slate-400">
-      <p>卡片不存在或已删除</p>
+      <p>{{ $t('cardWindow.notFound') }}</p>
     </div>
 
     <!-- 文章卡（不翻转，纯阅读） -->
@@ -59,7 +59,7 @@
                 <a :href="card.source" target="_blank" class="hover:text-blue-500 transition-colors truncate max-w-[120px]">{{ displaySource }}</a>
               </span>
               <span :class="isDark ? 'text-slate-400' : 'text-slate-500'" class="flex items-center gap-1">
-                <RefreshCw :size="11" /> 点击翻转
+                <RefreshCw :size="11" /> {{ $t('cardWindow.clickToFlip') }}
               </span>
             </div>
             <window-actions :show-actions="showActions" :card-id="cardId" :is-front="true" :is-dark="isDark" @toggle="showActions = !showActions" @edit="emit('edit', cardId)" @delete="emit('delete', cardId)" />
@@ -73,7 +73,7 @@
           :style="[flipBackStyle, backFaceStyle]"
         >
           <div class="flex items-center px-4 pt-3 pb-1.5 shrink-0">
-            <span class="text-xs font-medium text-emerald-400">#答案</span>
+            <span class="text-xs font-medium text-emerald-400">{{ $t('cardWindow.answerLabel') }}</span>
           </div>
           <div
             class="flex-1 px-4 py-1 overflow-y-auto"
@@ -89,7 +89,7 @@
                 <a :href="card.source" target="_blank" class="hover:text-blue-400 transition-colors truncate max-w-[120px]">{{ displaySource }}</a>
               </span>
               <span class="text-slate-400 flex items-center gap-1">
-                <RefreshCw :size="11" /> 点击翻回
+                <RefreshCw :size="11" /> {{ $t('cardWindow.clickToFlipBack') }}
               </span>
             </div>
             <window-actions :show-actions="showActions" :card-id="cardId" :is-front="false" :is-dark="true" @toggle="showActions = !showActions" @edit="emit('edit', cardId)" @delete="emit('delete', cardId)" />
@@ -106,6 +106,8 @@ import { Link, SquarePen, Trash2, MoreHorizontal, RefreshCw } from 'lucide-vue-n
 import { Marked } from 'marked'
 import { useCardStore } from '../composables/useCardStore'
 import { useSettings } from '../composables/useSettings'
+import { useI18n } from '../locales/i18n'
+const { t } = useI18n()
 
 const props = defineProps({
   cardId: { type: String, required: true },
@@ -226,7 +228,7 @@ const questionHtml = computed(() => {
 
 const answerHtml = computed(() => {
   if (!card.value) return ''
-  return markedInstance.parse(card.value.a || '未设置答案')
+  return markedInstance.parse(card.value.a || t('cardWindow.noAnswer'))
 })
 
 const displaySource = computed(() => {

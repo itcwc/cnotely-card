@@ -20,7 +20,7 @@
           </svg>
         </div>
         <div class="sheet-title-text">
-          <h2>新建内容</h2>
+          <h2>{{ $t('launcher.title') }}</h2>
           <span>CREATOR</span>
         </div>
       </div>
@@ -29,12 +29,12 @@
         <button
           @click="toggleMaximize"
           class="sheet-control-btn"
-          title="最大化/还原"
+          :title="$t('common.maximizeRestore')"
         >
           <Maximize v-if="!isMaximized" :size="14" />
           <Minimize2 v-else :size="14" />
         </button>
-        <button @click="emit('close')" class="sheet-close" title="关闭">
+        <button @click="emit('close')" class="sheet-close" :title="$t('common.close')">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -74,7 +74,7 @@
                 />
               </svg>
             </div>
-            <span class="type-label">链接</span>
+            <span class="type-label">{{ $t('launcher.typeLink') }}</span>
           </div>
 
           <div
@@ -103,7 +103,7 @@
                 <line x1="9" y1="14" x2="15" y2="14" />
               </svg>
             </div>
-            <span class="type-label">分类</span>
+            <span class="type-label">{{ $t('launcher.typeCategory') }}</span>
           </div>
 
           <div
@@ -125,7 +125,7 @@
                 <path d="M9 9h6M9 13h6M9 17h4" />
               </svg>
             </div>
-            <span class="type-label">记忆卡</span>
+            <span class="type-label">{{ $t('launcher.typeQa') }}</span>
           </div>
 
           <div
@@ -155,7 +155,7 @@
                 <line x1="16" y1="17" x2="8" y2="17" />
               </svg>
             </div>
-            <span class="type-label">文章卡</span>
+            <span class="type-label">{{ $t('launcher.typeArticle') }}</span>
           </div>
         </div>
       </section>
@@ -164,25 +164,25 @@
         <!-- Panel: Link -->
         <div v-if="activeTab === 'app'" class="form-panel visible">
           <div class="form-row">
-            <label class="form-label">应用名称</label>
+            <label class="form-label">{{ $t('launcher.appName') }}</label>
             <input
               v-model="appForm.name"
               type="text"
-              placeholder="例如：GitHub"
+              :placeholder="$t('launcher.placeholderName')"
               class="form-input"
             />
           </div>
           <div class="form-row">
-            <label class="form-label">链接地址</label>
+            <label class="form-label">{{ $t('launcher.appUrl') }}</label>
             <input
               v-model="appForm.url"
               type="url"
-              placeholder="https://..."
+              :placeholder="$t('launcher.placeholderUrl')"
               class="form-input"
             />
           </div>
           <div class="form-row">
-            <label class="form-label">图标</label>
+            <label class="form-label">{{ $t('launcher.icon') }}</label>
             <div class="icon-mode-tabs">
               <button
                 @click="appForm.iconMode = 'favicon'"
@@ -204,7 +204,7 @@
                     d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"
                   />
                 </svg>
-                网页图标
+                {{ $t('launcher.webIcon') }}
               </button>
               <button
                 @click="appForm.iconMode = 'text'"
@@ -224,7 +224,7 @@
                   <path d="M12 19l7-7 3 3-7 7-3-3z" />
                   <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
                 </svg>
-                文字图标
+                {{ $t('launcher.textIcon') }}
               </button>
             </div>
             <div class="favicon-row">
@@ -254,12 +254,8 @@
                 </div>
               </div>
               <div class="favicon-info">
-                <span class="favicon-info-label">{{
-                  faviconSource ? faviconSource : "自动获取"
-                }}</span>
-                <span class="favicon-info-hint font-mono">{{
-                  faviconSource ? "" : "输入网址后抓取"
-                }}</span>
+                <span class="favicon-info-label">{{ faviconSource ? faviconSource : $t('launcher.autoFetch') }}</span>
+                <span class="favicon-info-hint font-mono">{{ faviconSource ? "" : $t('launcher.fetchHint') }}</span>
               </div>
             </div>
             <div class="color-row">
@@ -275,7 +271,7 @@
                       c === '#ffffff' ? '1px solid rgba(0,0,0,0.08)' : 'none',
                   }"
                 ></button>
-                <label class="color-swatch-custom" title="自定义颜色">
+                <label class="color-swatch-custom" :title="$t('launcher.customColor')">
                   <input type="color" v-model="appForm.color" />
                   <svg
                     viewBox="0 0 24 24"
@@ -297,19 +293,19 @@
         <!-- Panel: Category -->
         <div v-if="activeTab === 'category'" class="form-panel visible">
           <div class="form-row">
-            <label class="form-label">分类名称</label>
+            <label class="form-label">{{ $t('desktop.form.categoryName') }}</label>
             <input
               v-model="categoryForm.name"
               type="text"
-              placeholder="例如：设计灵感"
+              :placeholder="$t('launcher.placeholderCategory')"
               class="form-input"
             />
           </div>
           <div class="form-row">
-            <label class="form-label">图标</label>
+            <label class="form-label">{{ $t('launcher.icon') }}</label>
             <div class="icon-picker-grid">
               <button
-                v-for="preset in presetIcons"
+                v-for="preset in presetIcons.value"
                 :key="preset.comp"
                 @click="selectCategoryPreset(preset)"
                 :class="[
@@ -323,7 +319,7 @@
             </div>
           </div>
           <div class="form-row">
-            <label class="form-label">背景色</label>
+            <label class="form-label">{{ $t('desktop.form.backgroundColor') }}</label>
             <div class="color-row">
               <div
                 class="text-icon-preview"
@@ -353,7 +349,7 @@
                         : 'none',
                   }"
                 ></button>
-                <label class="color-swatch-custom" title="自定义颜色">
+                <label class="color-swatch-custom" :title="$t('launcher.customColor')">
                   <input type="color" v-model="categoryForm.color" />
                   <svg
                     viewBox="0 0 24 24"
@@ -378,13 +374,13 @@
           class="form-panel visible"
         >
           <div class="hint-bar">
-            <span class="hint-badge">步骤 1/2</span>
+            <span class="hint-badge">{{ $t('launcher.step1of2') }}</span>
             <span class="hint-text"
-              >选择分类后点击创建，进入编辑器填写内容</span
+              >{{ $t('launcher.stepHint') }}</span
             >
           </div>
           <div class="form-row">
-            <label class="form-label">分类</label>
+            <label class="form-label">{{ $t('launcher.categoryLabel') }}</label>
             <div
               class="cat-select-trigger"
               ref="categoryDropdownRef"
@@ -454,7 +450,7 @@
                       />
                     </svg>
                   </div>
-                  <span>未分类</span>
+                  <span>{{ $t('common.unknown') }}</span>
                 </button>
                 <button
                   v-for="cat in categories"
@@ -484,11 +480,11 @@
             </Teleport>
           </div>
           <div class="form-row">
-            <label class="form-label">来源链接（可选）</label>
+            <label class="form-label">{{ $t('launcher.sourceLabel') }}</label>
             <input
               v-model="cardForm.source"
               type="url"
-              placeholder="https://..."
+              :placeholder="$t('launcher.placeholderUrl')"
               class="form-input"
             />
           </div>
@@ -497,15 +493,15 @@
     </div>
 
     <footer class="sheet-footer">
-      <div class="footer-hint"><kbd>Esc</kbd> 关闭 · <kbd>Enter</kbd> 创建</div>
+      <div class="footer-hint"><kbd>Esc</kbd> {{ $t('common.close') }} · <kbd>Enter</kbd> {{ $t('common.create') }}</div>
       <div class="footer-actions">
-        <button @click="emit('close')" class="btn btn-cancel">取消</button>
+        <button @click="emit('close')" class="btn btn-cancel">{{ $t('common.cancel') }}</button>/button>
         <button
           @click="handleCreate"
           :disabled="!canCreate"
           class="btn btn-create"
         >
-          创建
+          {{ $t('common.create') }}
         </button>
       </div>
     </footer>
@@ -541,6 +537,7 @@ import {
 import { useCardStore } from "../composables/useCardStore";
 import { useSheetWindow } from "../composables/useSheetWindow";
 import { useSettings } from "../composables/useSettings";
+import { useI18n } from "../locales/i18n";
 
 const emit = defineEmits([
   "close",
@@ -611,9 +608,9 @@ const selectedCatColor = computed(() => {
 });
 
 const selectedCatLabel = computed(() => {
-  if (!cardForm.value.categoryId) return "未分类";
+  if (!cardForm.value.categoryId) return t('common.unknown');
   const cat = categories.value.find((c) => c.id === cardForm.value.categoryId);
-  return cat?.name || "未分类";
+  return cat?.name || t('common.unknown');
 });
 
 const hexToPaletteKey = {
@@ -741,24 +738,26 @@ const presetColors = [
   "#ec4899",
 ];
 
-const presetIcons = [
-  { comp: "Globe", label: "网页" },
-  { comp: "BookOpen", label: "文档" },
-  { comp: "MessageSquare", label: "社交" },
-  { comp: "Camera", label: "图片" },
-  { comp: "Music", label: "音乐" },
-  { comp: "Code2", label: "代码" },
-  { comp: "Pen", label: "写作" },
-  { comp: "Mail", label: "邮件" },
-  { comp: "Search", label: "搜索" },
-  { comp: "MapPin", label: "地图" },
-  { comp: "Calendar", label: "日历" },
-  { comp: "Cloud", label: "云盘" },
-  { comp: "ShoppingCart", label: "购物" },
-  { comp: "Video", label: "视频" },
-  { comp: "Bookmark", label: "收藏" },
-  { comp: "Terminal", label: "工具" },
-];
+const { t, locale } = useI18n();
+
+const presetIcons = computed(() => [
+  { comp: "Globe", label: t('launcher.iconLabels.web') },
+  { comp: "BookOpen", label: t('launcher.iconLabels.doc') },
+  { comp: "MessageSquare", label: t('launcher.iconLabels.social') },
+  { comp: "Camera", label: t('launcher.iconLabels.image') },
+  { comp: "Music", label: t('launcher.iconLabels.music') },
+  { comp: "Code2", label: t('launcher.iconLabels.code') },
+  { comp: "Pen", label: t('launcher.iconLabels.write') },
+  { comp: "Mail", label: t('launcher.iconLabels.mail') },
+  { comp: "Search", label: t('launcher.iconLabels.search') },
+  { comp: "MapPin", label: t('launcher.iconLabels.map') },
+  { comp: "Calendar", label: t('launcher.iconLabels.calendar') },
+  { comp: "Cloud", label: t('launcher.iconLabels.cloud') },
+  { comp: "ShoppingCart", label: t('launcher.iconLabels.shop') },
+  { comp: "Video", label: t('launcher.iconLabels.video') },
+  { comp: "Bookmark", label: t('launcher.iconLabels.bookmark') },
+  { comp: "Terminal", label: t('launcher.iconLabels.tool') },
+]);
 
 const iconComponents = {
   Globe,

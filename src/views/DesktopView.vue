@@ -18,15 +18,15 @@
         <span class="text-xs font-semibold tracking-tight menubar-text">cnotely</span>
         <div class="menubar-sep"></div>
         <button @click="showLauncher = true" class="menubar-btn">
-          <Plus :size="12" /> 新建
+          <Plus :size="12" /> {{ $t('desktop.new') }}
         </button>
         <button @click="toggleLayoutMode" class="menubar-btn">
           <Grid :size="12" v-if="desktopLayoutMode === 'auto'" />
           <Move :size="12" v-else />
-          {{ desktopLayoutMode === "auto" ? "自动" : "自由" }}
+          {{ desktopLayoutMode === "auto" ? $t('desktop.auto') : $t('desktop.free') }}
         </button>
-        <button @click="showSetting = true" class="menubar-btn" title="设置">
-          <SettingsIcon :size="12" /> 设置
+        <button @click="showSetting = true" class="menubar-btn" :title="$t('desktop.settings')">
+          <SettingsIcon :size="12" /> {{ $t('desktop.settings') }}
         </button>
       </div>
       <div class="flex items-center gap-3">
@@ -81,7 +81,7 @@
           <div class="dock-icon dock-icon-launcher">
             <Plus :size="28" class="text-white" />
           </div>
-          <span class="dock-label" v-show="showIconLabels">新建</span>
+          <span class="dock-label" v-show="showIconLabels">{{ $t('desktop.new') }}</span>
         </div>
 
         <div class="dock-separator"></div>
@@ -105,23 +105,23 @@
           <div class="dock-icon dock-icon-clear">
             <Eraser :size="28" class="text-white" />
           </div>
-          <span class="dock-label" v-show="showIconLabels">清空</span>
+          <span class="dock-label" v-show="showIconLabels">{{ $t('desktop.clear') }}</span>
         </div>
 
         <div class="dock-item" @click="openTrash" @mouseenter="handleDockHover($event, categories.length + 2)">
           <div class="dock-icon dock-icon-trash" :class="{ 'dock-icon-trash-active': isDraggingOverTrash }">
             <Trash2 :size="28" class="text-white" />
           </div>
-          <span class="dock-label" v-show="showIconLabels">废纸篓</span>
+          <span class="dock-label" v-show="showIconLabels">{{ $t('desktop.trash.title') }}</span>
           <div v-if="isDraggingOverTrash" class="trash-drop-hint">
-            <span>释放删除</span>
+            <span>{{ $t('desktop.trash.releaseDelete') }}</span>
           </div>
           <Transition name="hint-fade">
             <div v-if="showTrashHint" class="trash-guide-hint" @click.stop="closeTrashHint">
               <div class="trash-guide-hint-content">
-                <span>拖拽卡片到此处删除</span>
+                <span>{{ $t('desktop.trash.dragHere') || '拖拽卡片到此处删除' }}</span>
                 <button class="trash-guide-hint-close" @click.stop="closeTrashHint">
-                  知道了
+                  {{ $t('desktop.trash.gotIt') || '知道了' }}
                 </button>
               </div>
             </div>
@@ -145,7 +145,7 @@
       @click.self="showAppEditor = false">
       <div class="macos-sheet" style="width: 440px">
         <div class="sheet-header">
-          <h2 class="sheet-title">编辑链接</h2>
+          <h2 class="sheet-title">{{ $t('desktop.editLink') || '编辑链接' }}</h2>
           <button @click="showAppEditor = false" class="close-button">
             <X :size="14" />
           </button>
@@ -154,11 +154,11 @@
         <div class="sheet-content">
           <div class="app-edit-form">
             <div class="form-row">
-              <label class="form-label">应用名称</label>
-              <input v-model="appEditForm.name" type="text" placeholder="例如：GitHub" class="form-input" />
+              <label class="form-label">{{ $t('desktop.appName') || '应用名称' }}</label>
+              <input v-model="appEditForm.name" type="text" :placeholder="$t('launcher.placeholderName')" class="form-input" />
             </div>
             <div class="form-row">
-              <label class="form-label">链接地址</label>
+              <label class="form-label">{{ $t('desktop.linkUrl') || '链接地址' }}</label>
               <input v-model="appEditForm.url" type="url" placeholder="https://..." class="form-input" />
             </div>
             <div class="form-row">
@@ -172,14 +172,14 @@
                   },
                 ]">
                   <Globe :size="14" />
-                  <span>网页图标</span>
+                  <span>{{ $t('desktop.webIcon') || '网页图标' }}</span>
                 </button>
                 <button @click="appEditForm.iconMode = 'text'" :class="[
                   'icon-mode-tab',
                   { 'icon-mode-tab-active': appEditForm.iconMode === 'text' },
                 ]">
                   <Pen :size="14" />
-                  <span>文字图标</span>
+                  <span>{{ $t('desktop.textIcon') || '文字图标' }}</span>
                 </button>
               </div>
               <div v-if="appEditForm.iconMode === 'favicon'" class="favicon-section">
@@ -191,7 +191,7 @@
                     </div>
                   </div>
                   <div class="favicon-info">
-                    <span class="favicon-label">自动获取</span>
+                    <span class="favicon-label">{{ $t('desktop.autoFetch') || '自动获取' }}</span>
                     <span class="favicon-hint">{{
                       appEditFaviconSource === "apple-touch-icon"
                         ? "apple-touch-icon"
@@ -240,11 +240,11 @@
         </div>
         <div class="sheet-footer">
           <button @click="showAppEditor = false" class="btn btn-secondary">
-            取消
+            {{ $t('common.cancel') }}
           </button>
           <button @click="saveAppEditor" :disabled="!appEditForm.name.trim() || !appEditForm.url.trim()"
             class="btn btn-primary">
-            保存
+            {{ $t('common.save') }}
           </button>
         </div>
       </div>
@@ -258,13 +258,13 @@
               <Trash2 :size="14" />
             </div>
             <div class="sheet-title-text">
-              <h2 class="sheet-title">废纸篓</h2>
+            <h2 class="sheet-title">{{ $t('desktop.trash.title') || '废纸篓' }}</h2>
               <span>TRASH</span>
             </div>
           </div>
           <div class="sheet-drag-bar w-10"></div>
           <div class="sheet-controls">
-            <button @click="trashToggleMaximize" class="sheet-control-btn" title="最大化/还原">
+            <button @click="trashToggleMaximize" class="sheet-control-btn" :title="$t('desktop.trash.maximizeRestore')">
               <Maximize v-if="!trashMaximized" :size="14" />
               <Minimize2 v-else :size="14" />
             </button>
@@ -276,24 +276,24 @@
 
         <div class="sheet-content">
           <div v-if="deletedCards.length === 0 && deletedApps.length === 0" class="trash-empty">
-            <p>废纸篓是空的</p>
+            <p>{{ $t('desktop.trash.empty') || '废纸篓是空的' }}</p>
           </div>
           <div v-else class="trash-list">
             <template v-if="deletedApps.length > 0">
               <div class="text-[10px] font-bold text-slate-500 tracking-wider uppercase mb-2 mt-1">
-                图标
+                {{ $t('desktop.trash.iconGroup') || '图标' }}
               </div>
               <div v-for="app in deletedApps" :key="'app-' + app.id" class="trash-item">
                 <div class="trash-item-info">
-                  <p class="trash-item-title">{{ app.name || "无标题" }}</p>
-                  <p class="trash-item-type">网页图标</p>
+                  <p class="trash-item-title">{{ app.name || $t('common.unknown') || "无标题" }}</p>
+                  <p class="trash-item-type">{{ $t('desktop.iconTypes.web') }}</p>
                 </div>
                 <div class="trash-item-actions">
                   <button @click="restoreAppFromTrash(app.id)" class="btn-restore">
-                    恢复
+                    {{ $t('common.restore') || '恢复' }}
                   </button>
                   <button @click="permanentlyDeleteAppFromTrash(app.id)" class="btn-delete">
-                    彻底删除
+                    {{ $t('desktop.trash.permanentDelete') || '彻底删除' }}
                   </button>
                 </div>
               </div>
@@ -302,23 +302,23 @@
             <template v-if="deletedCards.length > 0">
               <div class="text-[10px] font-bold text-slate-500 tracking-wider uppercase mb-2 mt-2"
                 :class="{ 'mt-3': deletedApps.length > 0 }">
-                卡片
+                {{ $t('desktop.trash.cardGroup') || '卡片' }}
               </div>
               <div v-for="card in deletedCards" :key="'card-' + card.id" class="trash-item">
                 <div class="trash-item-info">
                   <p class="trash-item-title">
-                    {{ card.question || "无标题" }}
+                    {{ card.question || $t('common.unknown') || "无标题" }}
                   </p>
                   <p class="trash-item-type">
-                    {{ card.type === "article" ? "文章卡" : "记忆卡" }}
+                    {{ card.type === "article" ? $t('desktop.cardTypes.article') : $t('desktop.cardTypes.memory') }}
                   </p>
                 </div>
                 <div class="trash-item-actions">
                   <button @click="restoreCard(card.id)" class="btn-restore">
-                    恢复
+                    {{ $t('common.restore') || '恢复' }}
                   </button>
                   <button @click="permanentlyDeleteCard(card.id)" class="btn-delete">
-                    彻底删除
+                    {{ $t('desktop.trash.permanentDelete') || '彻底删除' }}
                   </button>
                 </div>
               </div>
@@ -332,7 +332,7 @@
       @click.self="showCategoryEditor = false">
       <div class="macos-sheet" style="width: 440px">
         <div class="sheet-header">
-          <h2 class="sheet-title">编辑分类</h2>
+          <h2 class="sheet-title">{{ $t('desktop.contextMenu.editCategory') || '编辑分类' }}</h2>
           <button @click="showCategoryEditor = false" class="close-button">
             <X :size="14" />
           </button>
@@ -340,11 +340,11 @@
         <div class="sheet-content">
           <div class="form-section">
             <div class="form-row">
-              <label class="form-label">分类名称</label>
-              <input v-model="categoryEditForm.name" type="text" placeholder="例如：设计灵感" class="form-input" />
+              <label class="form-label">{{ $t('desktop.form.categoryName') || '分类名称' }}</label>
+              <input v-model="categoryEditForm.name" type="text" :placeholder="$t('launcher.placeholderCategory')" class="form-input" />
             </div>
             <div class="form-row">
-              <label class="form-label">图标</label>
+              <label class="form-label">{{ $t('desktop.form.icon') || '图标' }}</label>
               <div class="icon-picker-grid">
                 <button v-for="preset in categoryPresetIcons" :key="preset.comp"
                   @click="categoryEditForm.comp = preset.comp" :class="[
@@ -361,7 +361,7 @@
               </div>
             </div>
             <div class="form-row">
-              <label class="form-label">背景色</label>
+              <label class="form-label">{{ $t('desktop.form.backgroundColor') || '背景色' }}</label>
               <div class="text-icon-row">
                 <div class="text-icon-preview" :style="{ background: categoryEditForm.color }">
                   <component v-if="categoryEditForm.comp" :is="iconComponents[categoryEditForm.comp]" :size="20"
@@ -386,10 +386,10 @@
         </div>
         <div class="sheet-footer">
           <button @click="showCategoryEditor = false" class="btn btn-secondary">
-            取消
+            {{ $t('common.cancel') || '取消' }}
           </button>
           <button @click="saveCategoryEditor" :disabled="!categoryEditForm.name.trim()" class="btn btn-primary">
-            保存
+            {{ $t('common.save') || '保存' }}
           </button>
         </div>
       </div>
@@ -400,6 +400,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "../locales/i18n";
 import {
   Plus,
   X,
@@ -439,6 +440,7 @@ import { useSheetWindow } from "../composables/useSheetWindow";
 import { db } from "../db";
 import { useSettings } from "../composables/useSettings";
 
+const { t, locale } = useI18n();
 const router = useRouter();
 
 const {
@@ -467,6 +469,7 @@ const {
   updateWindowSize,
   selectIcon,
   clearSelection,
+  loadApps,
   loadAllCards,
   setDesktopLayoutMode,
   updateAppPosition,
@@ -740,16 +743,17 @@ const contextMenu = ref({
 
 function updateTime() {
   const now = new Date();
-  currentTime.value = now.toLocaleTimeString("zh-CN", {
+  currentTime.value = now.toLocaleTimeString(locale.value === 'en' ? 'en-US' : 'zh-CN', {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
   });
-  const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  const weekdays = t('desktop.dateFormat.weekdays') || ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
   const month = now.getMonth() + 1;
   const day = now.getDate();
   const weekday = weekdays[now.getDay()];
-  currentDate.value = `${month}月${day}日 ${weekday}`;
+  const dateFormat = t('desktop.dateFormat.format') || '{month}月{day}日 {weekday}';
+  currentDate.value = dateFormat.replace('{month}', month).replace('{day}', day).replace('{weekday}', weekday);
 }
 
 function handleDesktopClick(e) {
@@ -901,11 +905,11 @@ async function handleIconDragEnd(appId, gridX, gridY) {
 
 function handleIconContextMenu(app, e) {
   e.stopPropagation();
-  const items = [{ label: "打开", action: "open" }];
+  const items = [{ label: t('desktop.dockMenu.open'), action: "open" }];
   if (!app.pinned) {
-    items.push({ label: "编辑", action: "edit" });
+    items.push({ label: t('desktop.dockMenu.edit'), action: "edit" });
     items.push({ divider: true });
-    items.push({ label: "移到废纸篓", action: "delete", danger: true });
+    items.push({ label: t('desktop.dockMenu.moveToTrash'), action: "delete", danger: true });
   }
   contextMenu.value = {
     visible: true,
@@ -1103,11 +1107,11 @@ async function handleCreateCategory(data) {
 }
 
 function handleCategoryContextMenu(e, cat) {
-  const items = [{ label: "打开文件夹", action: "open-folder" }];
+  const items = [{ label: t('desktop.contextMenu.openFolder'), action: "open-folder" }];
   if (!cat.isDefault) {
-    items.push({ label: "编辑分类", action: "edit-category" });
+    items.push({ label: t('desktop.contextMenu.editCategory'), action: "edit-category" });
     items.push({ divider: true });
-    items.push({ label: "删除分类", action: "delete-category", danger: true });
+    items.push({ label: t('desktop.contextMenu.deleteCategory'), action: "delete-category", danger: true });
   }
   const menuHeight = items.length * 34 + 8;
   contextMenu.value = {
@@ -1220,24 +1224,24 @@ const categoryPresetColors = [
   "#ec4899",
 ];
 
-const categoryPresetIcons = [
-  { comp: "Globe", label: "网页" },
-  { comp: "BookOpen", label: "文档" },
-  { comp: "MessageSquare", label: "社交" },
-  { comp: "Camera", label: "图片" },
-  { comp: "Music", label: "音乐" },
-  { comp: "Code2", label: "代码" },
-  { comp: "Pen", label: "写作" },
-  { comp: "Mail", label: "邮件" },
-  { comp: "Search", label: "搜索" },
-  { comp: "MapPin", label: "地图" },
-  { comp: "Calendar", label: "日历" },
-  { comp: "Cloud", label: "云盘" },
-  { comp: "ShoppingCart", label: "购物" },
-  { comp: "Video", label: "视频" },
-  { comp: "Bookmark", label: "收藏" },
-  { comp: "Terminal", label: "工具" },
-];
+const categoryPresetIcons = computed(() => [
+  { comp: "Globe", label: t('desktop.iconTypes.web') },
+  { comp: "BookOpen", label: t('desktop.iconTypes.doc') },
+  { comp: "MessageSquare", label: t('desktop.iconTypes.social') },
+  { comp: "Camera", label: t('desktop.iconTypes.image') },
+  { comp: "Music", label: t('desktop.iconTypes.music') },
+  { comp: "Code2", label: t('desktop.iconTypes.code') },
+  { comp: "Pen", label: t('desktop.iconTypes.write') },
+  { comp: "Mail", label: t('desktop.iconTypes.mail') },
+  { comp: "Search", label: t('desktop.iconTypes.search') },
+  { comp: "MapPin", label: t('desktop.iconTypes.map') },
+  { comp: "Calendar", label: t('desktop.iconTypes.calendar') },
+  { comp: "Cloud", label: t('desktop.iconTypes.cloud') },
+  { comp: "ShoppingCart", label: t('desktop.iconTypes.shop') },
+  { comp: "Video", label: t('desktop.iconTypes.video') },
+  { comp: "Bookmark", label: t('desktop.iconTypes.favorite') },
+  { comp: "Terminal", label: t('desktop.iconTypes.tool') },
+]);
 
 function openTrash() {
   loadTrashItems();

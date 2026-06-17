@@ -25,7 +25,7 @@
           </svg>
         </div>
         <div class="sheet-title-text">
-          <h2>设置</h2>
+          <h2>{{ $t('settings.title') }}</h2>
           <span>SETTINGS</span>
         </div>
       </div>
@@ -34,12 +34,12 @@
         <button
           @click="toggleMaximize"
           class="sheet-control-btn"
-          title="最大化/还原"
+          :title="$t('common.maximizeRestore')"
         >
           <Maximize v-if="!isMaximized" :size="14" />
           <Minimize2 v-else :size="14" />
         </button>
-        <button @click="$emit('close')" class="sheet-close" title="关闭">
+        <button @click="$emit('close')" class="sheet-close" :title="$t('common.close')">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -79,15 +79,15 @@
         <!-- ====== 外观 ====== -->
         <template v-if="activeTab === 'appearance'">
           <div class="panel-header">
-            <h2>外观</h2>
-            <p>自定义界面视觉效果</p>
+            <h2>{{ $t('settings.appearance.title') }}</h2>
+            <p>{{ $t('settings.appearance.desc') }}</p>
           </div>
 
-          <div class="setting-group-title">壁纸</div>
+          <div class="setting-group-title">{{ $t('settings.appearance.wallpaper') }}</div>
             <div class="setting-row">
               <div>
-                <p class="setting-label">桌面壁纸</p>
-                <p class="setting-desc">选择一张喜欢的背景图</p>
+                <p class="setting-label">{{ $t('settings.appearance.desktopWallpaper') }}</p>
+                <p class="setting-desc">{{ $t('settings.appearance.wallpaperDesc') }}</p>
               </div>
               <div class="flex gap-2 items-center">
                 <img
@@ -103,7 +103,7 @@
                 />
                 <label
                   class="wallpaper-thumb bg-slate-100 flex items-center justify-center cursor-pointer text-slate-500 font-bold text-lg"
-                  title="自定义上传"
+                  :title="$t('settings.appearance.customUpload')"
                   @click="handleCustomWallpaper"
                 >
                   ＋
@@ -118,11 +118,11 @@
               </div>
             </div>
 
-          <div class="setting-group-title">透明度</div>
+          <div class="setting-group-title">{{ $t('settings.appearance.transparency') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">磨砂玻璃强度</p>
-              <p class="setting-desc">控制毛玻璃效果的模糊程度</p>
+              <p class="setting-label">{{ $t('settings.appearance.blurStrength') }}</p>
+              <p class="setting-desc">{{ $t('settings.appearance.blurDesc') }}</p>
             </div>
             <div class="flex items-center gap-3">
               <input
@@ -140,8 +140,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">顶栏不透明度</p>
-              <p class="setting-desc">顶部菜单栏的背景透明度</p>
+              <p class="setting-label">{{ $t('settings.appearance.barOpacity') }}</p>
+              <p class="setting-desc">{{ $t('settings.appearance.barOpacityDesc') }}</p>
             </div>
             <div class="flex items-center gap-3">
               <input
@@ -158,29 +158,29 @@
             </div>
           </div>
 
-          <div class="setting-group-title">主题</div>
+          <div class="setting-group-title">{{ $t('settings.appearance.theme') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">界面主题</p>
-              <p class="setting-desc">控制弹窗、面板、编辑器的颜色模式</p>
+              <p class="setting-label">{{ $t('settings.appearance.themeLabel') }}</p>
+              <p class="setting-desc">{{ $t('settings.appearance.themeDesc') }}</p>
             </div>
             <div class="segmented-control">
               <button
-                v-for="t in ['浅色', '深色']"
-                :key="t"
-                :class="['segmented-btn', { active: globalThemeLabel === t }]"
-                @click="globalTheme = t === '浅色' ? 'light' : 'dark'"
+                v-for="t in themeOptions"
+                :key="t.value"
+                :class="['segmented-btn', { active: globalTheme === t.value }]"
+                @click="globalTheme = t.value"
               >
-                {{ t }}
+                {{ t.label }}
               </button>
             </div>
           </div>
 
-          <div class="setting-group-title">动画效果</div>
+          <div class="setting-group-title">{{ $t('settings.appearance.reduceMotion') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">减少动画效果</p>
-              <p class="setting-desc">关闭后使用更简洁的过渡动画</p>
+              <p class="setting-label">{{ $t('settings.appearance.reduceMotionLabel') }}</p>
+              <p class="setting-desc">{{ $t('settings.appearance.reduceMotionDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: reduceMotion }]"
@@ -189,8 +189,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">Dock 栏放大效果</p>
-              <p class="setting-desc">鼠标悬停时图标放大动画</p>
+              <p class="setting-label">{{ $t('settings.appearance.dockZoom') }}</p>
+              <p class="setting-desc">{{ $t('settings.appearance.dockZoomDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: dockZoom }]"
@@ -202,34 +202,34 @@
         <!-- ====== 桌面 ====== -->
         <template v-if="activeTab === 'desktop'">
           <div class="panel-header">
-            <h2>桌面</h2>
-            <p>桌面布局与行为设置</p>
+            <h2>{{ $t('settings.tabs.desktop') }}</h2>
+            <p>{{ $t('settings.desktop.desc') }}</p>
           </div>
 
-          <div class="setting-group-title">布局模式</div>
+          <div class="setting-group-title">{{ $t('settings.desktop.layout') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">默认排列方式</p>
-              <p class="setting-desc">新打开时的桌面排列模式</p>
+              <p class="setting-label">{{ $t('settings.desktop.layoutDesc') }}</p>
+              <p class="setting-desc">{{ $t('settings.desktop.autoLayout') }}</p>
             </div>
             <div class="segmented-control">
               <button
-                v-for="(opt, i) in ['自动', '自由']"
-                :key="opt"
-                :class="['segmented-btn', { active: layoutMode === opt }]"
-                @click="layoutMode = opt"
+                v-for="opt in layoutOptions"
+                :key="opt.value"
+                :class="['segmented-btn', { active: layoutMode === opt.value }]"
+                @click="layoutMode = opt.value"
               >
-                {{ opt }}
+                {{ opt.label }}
               </button>
             </div>
           </div>
 
 
-          <div class="setting-group-title">图标网格</div>
+          <div class="setting-group-title">{{ $t('settings.desktop.iconGap') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">图标间距</p>
-              <p class="setting-desc">图标之间的距离（像素）</p>
+              <p class="setting-label">{{ $t('settings.desktop.iconGap') }}</p>
+              <p class="setting-desc">{{ $t('settings.desktop.iconGapDesc') }}</p>
             </div>
             <div class="flex items-center gap-3">
               <input
@@ -248,8 +248,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">显示图标名称</p>
-              <p class="setting-desc">在图标下方显示文字标签</p>
+              <p class="setting-label">{{ $t('settings.desktop.showLabels') }}</p>
+              <p class="setting-desc">{{ $t('settings.desktop.showLabelsDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: showIconLabels }]"
@@ -257,11 +257,11 @@
             ></div>
           </div>
 
-          <div class="setting-group-title">拖拽行为</div>
+          <div class="setting-group-title">{{ $t('settings.desktop.trashDirectDelete') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">拖入废纸篓直接删除</p>
-              <p class="setting-desc">开启后拖到废纸篓即删除，无需确认</p>
+              <p class="setting-label">{{ $t('settings.desktop.trashDirectDelete') }}</p>
+              <p class="setting-desc">{{ $t('settings.desktop.trashDirectDeleteDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: trashDirectDelete }]"
@@ -273,33 +273,33 @@
         <!-- ====== 卡片 ====== -->
         <template v-if="activeTab === 'card'">
           <div class="panel-header">
-            <h2>卡片</h2>
-            <p>记忆卡和文章卡的默认设置</p>
+            <h2>{{ $t('settings.tabs.card') }}</h2>
+            <p>{{ $t('settings.card.desc') }}</p>
           </div>
 
-          <div class="setting-group-title">新建卡片</div>
+          <div class="setting-group-title">{{ $t('settings.card.defaultType') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">默认卡片类型</p>
-              <p class="setting-desc">点击新建时默认创建的卡片类型</p>
+              <p class="setting-label">{{ $t('settings.card.defaultType') }}</p>
+              <p class="setting-desc">{{ $t('settings.card.defaultTypeDesc') }}</p>
             </div>
             <div class="segmented-control">
               <button
-                v-for="t in ['记忆卡', '文章卡']"
-                :key="t"
-                :class="['segmented-btn', { active: defaultCardType === t }]"
-                @click="defaultCardType = t"
+                v-for="t in cardTypeOptions"
+                :key="t.value"
+                :class="['segmented-btn', { active: defaultCardType === t.value }]"
+                @click="defaultCardType = t.value"
               >
-                {{ t }}
+                {{ t.label }}
               </button>
             </div>
           </div>
 
-          <div class="setting-group-title">翻转动画</div>
+          <div class="setting-group-title">{{ $t('settings.card.flipSpeed') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">翻转速度</p>
-              <p class="setting-desc">卡片翻转的动画时长</p>
+              <p class="setting-label">{{ $t('settings.card.flipSpeed') }}</p>
+              <p class="setting-desc">{{ $t('settings.card.flipSpeedDesc') }}</p>
             </div>
             <div class="flex items-center gap-3">
               <input
@@ -318,8 +318,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">3D 翻转透视</p>
-              <p class="setting-desc">启用立体翻转效果</p>
+              <p class="setting-label">{{ $t('settings.card.flip3d') }}</p>
+              <p class="setting-desc">{{ $t('settings.card.flip3dDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: flip3d }]"
@@ -328,8 +328,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">3D 透视深度</p>
-              <p class="setting-desc">控制 3D 翻转的立体感强度（仅 3D 模式）</p>
+              <p class="setting-label">{{ $t('settings.card.perspective') }}</p>
+              <p class="setting-desc">{{ $t('settings.card.perspectiveDesc') }}</p>
             </div>
             <div class="flex items-center gap-3">
               <input
@@ -347,9 +347,9 @@
             </div>
           </div>
 
-          <div class="setting-group-title">默认尺寸</div>
+          <div class="setting-group-title">{{ $t('settings.card.cardSize') }}</div>
           <div class="setting-row">
-            <div><p class="setting-label">记忆卡宽度</p></div>
+            <div><p class="setting-label">{{ $t('settings.card.cardWidth')}}</p></div>
             <input
               type="number"
               v-model="cardWidth"
@@ -358,7 +358,7 @@
             />
           </div>
           <div class="setting-row">
-            <div><p class="setting-label">记忆卡高度</p></div>
+            <div><p class="setting-label">{{ $t('settings.card.cardHeight')}}</p></div>
             <input
               type="number"
               v-model="cardHeight"
@@ -367,7 +367,7 @@
             />
           </div>
           <div class="setting-row">
-            <div><p class="setting-label">文章卡宽度</p></div>
+            <div><p class="setting-label">{{ $t('settings.card.articleWidth')}}</p></div>
             <input
               type="number"
               v-model="articleWidth"
@@ -380,15 +380,15 @@
         <!-- ====== 复习 ====== -->
         <template v-if="activeTab === 'review'">
           <div class="panel-header">
-            <h2>复习</h2>
-            <p>艾宾浩斯间隔重复算法配置</p>
+            <h2>{{ $t('settings.tabs.review') }}</h2>
+            <p>{{ $t('settings.review.desc') }}</p>
           </div>
 
-          <div class="setting-group-title">主题</div>
+          <div class="setting-group-title">{{ $t('settings.review.theme') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">工作台主题</p>
-              <p class="setting-desc">复习页面的独立颜色模式</p>
+              <p class="setting-label">{{ $t('settings.review.theme') }}</p>
+              <p class="setting-desc">{{ $t('settings.review.themeDesc') }}</p>
             </div>
             <div class="segmented-control">
               <button
@@ -402,11 +402,11 @@
             </div>
           </div>
 
-          <div class="setting-group-title">算法参数</div>
+          <div class="setting-group-title">{{ $t('settings.review.algorithm') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">初始间隔</p>
-              <p class="setting-desc">首次标记「已掌握」后的复习天数</p>
+              <p class="setting-label">{{ $t('settings.review.initialInterval') }}</p>
+              <p class="setting-desc">{{ $t('settings.review.initialIntervalDesc') }}</p>
             </div>
             <input
               type="number"
@@ -419,8 +419,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">难度系数起始值</p>
-              <p class="setting-desc">SM-2 算法的初始 ease factor</p>
+              <p class="setting-label">{{ $t('settings.review.easeFactor') }}</p>
+              <p class="setting-desc">{{ $t('settings.review.easeFactorDesc') }}</p>
             </div>
             <input
               type="number"
@@ -434,8 +434,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">最小间隔倍数</p>
-              <p class="setting-desc">相邻两次复习的最小时间比例</p>
+              <p class="setting-label">{{ $t('settings.review.minIntervalMult') }}</p>
+              <p class="setting-desc">{{ $t('settings.review.minIntervalMultDesc') }}</p>
             </div>
             <input
               type="number"
@@ -448,11 +448,11 @@
             />
           </div>
 
-          <div class="setting-group-title">学习模式</div>
+          <div class="setting-group-title">{{ $t('settings.review.studyMode') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">自动播放下一张</p>
-              <p class="setting-desc">评分后自动切换到下一张卡片</p>
+              <p class="setting-label">{{ $t('settings.review.autoNext') }}</p>
+              <p class="setting-desc">{{ $t('settings.review.autoNextDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: autoNextCard }]"
@@ -461,8 +461,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">显示艾宾浩斯状态</p>
-              <p class="setting-desc">在卡片上显示下次复习时间提示</p>
+              <p class="setting-label">{{ $t('settings.review.showEbbinghaus') }}</p>
+              <p class="setting-desc">{{ $t('settings.review.showEbbinghausDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: showEbbinghaus }]"
@@ -471,8 +471,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">随机打乱顺序</p>
-              <p class="setting-desc">每次开始时打乱卡片顺序避免位置记忆</p>
+              <p class="setting-label">{{ $t('settings.review.shuffle') }}</p>
+              <p class="setting-desc">{{ $t('settings.review.shuffleDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: shuffleCards }]"
@@ -484,78 +484,78 @@
         <!-- ====== 番茄钟 ====== -->
         <template v-if="activeTab === 'pomodoro'">
           <div class="panel-header">
-            <h2>番茄钟</h2>
-            <p>专注计时器配置</p>
+            <h2>{{ $t('settings.tabs.pomodoro') }}</h2>
+            <p>{{ $t('settings.pomodoro.desc') }}</p>
           </div>
 
-          <div class="setting-group-title">时间设置</div>
+          <div class="setting-group-title">{{ $t('settings.pomodoro.time') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">专注时长</p>
-              <p class="setting-desc">单个番茄的时间长度</p>
+              <p class="setting-label">{{ $t('settings.pomodoro.focusDuration') }}</p>
+              <p class="setting-desc">{{ $t('settings.pomodoro.focusDurationDesc') }}</p>
             </div>
             <div class="segmented-control">
               <button
-                v-for="t in ['15分钟', '25分钟', '45分钟']"
-                :key="t"
-                :class="['segmented-btn', { active: focusDuration === t }]"
-                @click="focusDuration = t"
+                v-for="opt in focusDurationOptions"
+                :key="opt.value"
+                :class="['segmented-btn', { active: focusDuration === opt.value }]"
+                @click="focusDuration = opt.value"
               >
-                {{ t }}
+                {{ opt.label }}
               </button>
             </div>
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">短休息时长</p>
-              <p class="setting-desc">每个番茄结束后的休息时间</p>
+              <p class="setting-label">{{ $t('settings.pomodoro.shortBreak') }}</p>
+              <p class="setting-desc">{{ $t('settings.pomodoro.shortBreakDesc') }}</p>
             </div>
             <div class="segmented-control">
               <button
-                v-for="t in ['5分钟', '10分钟']"
-                :key="t"
-                :class="['segmented-btn', { active: shortBreak === t }]"
-                @click="shortBreak = t"
+                v-for="opt in shortBreakOptions"
+                :key="opt.value"
+                :class="['segmented-btn', { active: shortBreak === opt.value }]"
+                @click="shortBreak = opt.value"
               >
-                {{ t }}
+                {{ opt.label }}
               </button>
             </div>
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">长休息周期</p>
-              <p class="setting-desc">每几个番茄后进入长休息</p>
+              <p class="setting-label">{{ $t('settings.pomodoro.longBreakCycle') }}</p>
+              <p class="setting-desc">{{ $t('settings.pomodoro.longBreakCycleDesc') }}</p>
             </div>
             <div class="segmented-control">
               <button
-                v-for="t in ['3个', '4个', '5个']"
-                :key="t"
-                :class="['segmented-btn', { active: longBreakCycle === t }]"
-                @click="longBreakCycle = t"
+                v-for="opt in longBreakCycleOptions"
+                :key="opt.value"
+                :class="['segmented-btn', { active: longBreakCycle === opt.value }]"
+                @click="longBreakCycle = opt.value"
               >
-                {{ t }}
+                {{ opt.label }}
               </button>
             </div>
           </div>
           <div class="setting-row">
-            <div><p class="setting-label">长休息时长</p></div>
+            <div><p class="setting-label">{{ $t('settings.pomodoro.longBreak') }}</p></div>
             <div class="segmented-control">
               <button
-                v-for="t in ['15分钟', '20分钟', '30分钟']"
-                :key="t"
-                :class="['segmented-btn', { active: longBreakDuration === t }]"
-                @click="longBreakDuration = t"
+                v-for="opt in longBreakDurationOptions"
+                :key="opt.value"
+                :class="['segmented-btn', { active: longBreakDuration === opt.value }]"
+                @click="longBreakDuration = opt.value"
               >
-                {{ t }}
+                {{ opt.label }}
               </button>
             </div>
           </div>
 
-          <div class="setting-group-title">提醒与音效</div>
+          <div class="setting-group-title">{{ $t('settings.pomodoro.notify') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">完成提示音</p>
-              <p class="setting-desc">番茄结束时播放声音提醒</p>
+              <p class="setting-label">{{ $t('settings.pomodoro.sound') }}</p>
+              <p class="setting-desc">{{ $t('settings.pomodoro.soundDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: pomodoroSound }]"
@@ -564,8 +564,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">桌面通知</p>
-              <p class="setting-desc">通过系统推送通知提醒</p>
+              <p class="setting-label">{{ $t('settings.pomodoro.desktopNotify') }}</p>
+              <p class="setting-desc">{{ $t('settings.pomodoro.desktopNotifyDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: desktopNotify }]"
@@ -574,8 +574,8 @@
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">自动开始下一个</p>
-              <p class="setting-desc">休息结束后自动开始新的番茄</p>
+              <p class="setting-label">{{ $t('settings.pomodoro.autoStart') }}</p>
+              <p class="setting-desc">{{ $t('settings.pomodoro.autoStartDesc') }}</p>
             </div>
             <div
               :class="['toggle-switch', { active: autoStartPomodoro }]"
@@ -587,16 +587,16 @@
         <!-- ====== 数据 ====== -->
         <template v-if="activeTab === 'data'">
           <div class="panel-header">
-            <h2>数据管理</h2>
-            <p>导入、导出与存储空间</p>
+            <h2>{{ $t('settings.tabs.data') }}</h2>
+            <p>{{ $t('settings.data.desc') }}</p>
           </div>
 
-          <div class="setting-group-title">存储概览</div>
+          <div class="setting-group-title">{{ $t('settings.data.stats') }}</div>
           <div
             class="mx-6 my-3 p-4 rounded-xl bg-slate-50 border border-slate-200"
           >
             <div class="flex justify-between items-center mb-3">
-              <span class="text-sm font-medium text-slate-600">已用空间</span>
+              <span class="text-sm font-medium text-slate-600">{{ $t('settings.data.stats') }}</span>
               <span class="text-sm font-bold text-slate-800">{{ formatSize(storageStats.estimatedSize) }}</span>
             </div>
             <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -606,57 +606,72 @@
               ></div>
             </div>
             <div class="flex justify-between mt-2 text-[10px] text-slate-500">
-              <span>卡片: {{ storageStats.cardCount }} 张</span>
-              <span>图标: {{ storageStats.appCount }} 个</span>
-              <span>分类: {{ storageStats.catCount }} 个</span>
+              <span>{{ $t('settings.data.cardCount', { n: storageStats.cardCount }) }}</span>
+              <span>{{ $t('settings.data.appCount', { n: storageStats.appCount }) }}</span>
+              <span>{{ $t('settings.data.catCount', { n: storageStats.catCount }) }}</span>
             </div>
           </div>
 
-          <div class="setting-group-title">导出 / 导入</div>
+          <div class="setting-group-title">{{ $t('settings.data.export') }} / {{ $t('settings.data.import') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">导出全部数据</p>
-              <p class="setting-desc">将所有卡片、分类、设置导出为 JSON 文件</p>
+              <p class="setting-label">{{ $t('settings.data.exportBtn') }}</p>
+              <p class="setting-desc">{{ $t('settings.data.exportDesc') }}</p>
             </div>
-            <button class="btn-primary" @click="handleExport">导出</button>
+            <button class="btn-primary" @click="handleExport">{{ $t('settings.data.exportBtn') }}</button>
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">导入数据</p>
-              <p class="setting-desc">从 JSON 文件恢复之前导出的数据</p>
+              <p class="setting-label">{{ $t('settings.data.importBtn') }}</p>
+              <p class="setting-desc">{{ $t('settings.data.importDesc') }}</p>
             </div>
-            <button class="btn-secondary" @click="handleImport">导入</button>
-          </div>
-
-          <div class="setting-group-title">同步</div>
-          <div class="setting-row">
-            <div>
-              <p class="setting-label">云端同步</p>
-              <p class="setting-desc">跨设备同步你的学习进度（即将推出）</p>
-            </div>
-            <button class="btn-disabled">敬请期待</button>
+            <button class="btn-secondary" @click="handleImport">{{ $t('settings.data.importBtn') }}</button>
           </div>
 
-          <div class="setting-group-title danger-zone">危险操作</div>
+          <div class="setting-group-title">{{ $t('settings.data.sync')}}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">清空全部卡片</p>
-              <p class="setting-desc">删除所有卡片，保留分类和设置</p>
+              <p class="setting-label">{{ $t('settings.data.sync')}}</p>
+              <p class="setting-desc">{{ $t('settings.data.syncDesc') }}</p>
             </div>
-            <button class="danger-btn" @click="handleClearCards">清空卡片</button>
+            <button class="btn-disabled">{{ $t('settings.data.comingSoon') }}</button>
+          </div>
+
+          <div class="setting-group-title danger-zone">{{ $t('settings.data.clearCards') }}</div>
+          <div class="setting-row">
+            <div>
+              <p class="setting-label">{{ $t('settings.data.clearCards') }}</p>
+              <p class="setting-desc">{{ $t('settings.data.clearCardsDesc') }}</p>
+            </div>
+            <button class="danger-btn" @click="handleClearCards">{{ $t('settings.data.clearCards') }}</button>
           </div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">重置为出厂设置</p>
-              <p class="setting-desc">清除所有数据，恢复到首次安装状态</p>
+              <p class="setting-label">{{ $t('settings.data.resetFactory') }}</p>
+              <p class="setting-desc">{{ $t('settings.data.resetFactoryDesc') }}</p>
             </div>
-            <button class="danger-btn" @click="handleReset">重置全部</button>
+            <button class="danger-btn" @click="handleReset">{{ $t('settings.data.resetFactory') }}</button>
           </div>
         </template>
 
         <!-- ====== 关于 ====== -->
         <template v-if="activeTab === 'about'">
-          <div class="panel-header"><h2>关于 cnotely</h2></div>
+          <div class="panel-header"><h2>{{ $t('settings.about.title') }}</h2></div>
+          <div class="setting-group-title">{{ $t('settings.about.language') }}</div>
+          <div class="setting-row">
+            <div>
+              <p class="setting-label">{{ $t('settings.about.languageLabel') }}</p>
+              <p class="setting-desc">{{ $t('settings.about.languageDesc') }}</p>
+            </div>
+            <div class="segmented-control">
+              <button
+                v-for="l in localeOptions"
+                :key="l.value"
+                :class="['segmented-btn', { active: locale === l.value }]"
+                @click="locale = l.value"
+              >{{ l.label }}</button>
+            </div>
+          </div>
           <div class="flex flex-col items-center py-12">
             <div
               class="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-500 rounded-3xl flex items-center justify-center text-white text-4xl font-bold shadow-xl shadow-blue-500/25 mb-6"
@@ -665,31 +680,30 @@
             </div>
             <h3 class="text-xl font-bold text-slate-800">cnotely</h3>
             <p class="text-sm text-slate-500 mt-1">
-              闪记便笺工作台 · 版本 0.2.0
+              {{ $t('settings.about.appName') }} · {{ $t('settings.about.version') }} 0.2.0
             </p>
             <p
               class="text-xs text-slate-500 text-center max-w-sm mt-6 leading-relaxed"
             >
-              cnotely 是一款受 macOS
-              设计语言启发的闪记卡片工作台。通过拟物化的卡片交互、艾宾浩斯间隔重复算法和番茄专注钟，让知识管理像整理桌面一样直观有趣。
+              {{ $t('settings.about.appDescription') }}
             </p>
             <div class="grid grid-cols-3 gap-8 mt-8 text-center">
               <div>
                 <p class="text-2xl font-bold text-blue-500">{{ storageStats.cardCount }}</p>
-                <p class="text-[11px] text-slate-500 mt-1">张卡片</p>
+                <p class="text-[11px] text-slate-500 mt-1">{{ $t('settings.about.cardCountLabel')}}</p>
               </div>
               <div>
                 <p class="text-2xl font-bold text-emerald-500">{{ storageStats.totalCompletions }}</p>
-                <p class="text-[11px] text-slate-500 mt-1">次复习</p>
+                <p class="text-[11px] text-slate-500 mt-1">{{ $t('settings.about.reviewCountLabel')}}</p>
               </div>
               <div>
                 <p class="text-2xl font-bold text-amber-500">{{ Math.round(storageStats.totalFocusMinutes / 60) }}</p>
-                <p class="text-[11px] text-slate-500 mt-1">小时专注</p>
+                <p class="text-[11px] text-slate-500 mt-1">{{ $t('settings.about.focusHourLabel')}}</p>
               </div>
             </div>
             <div class="mt-8 pt-6 border-t border-slate-100 w-full text-center">
               <p class="text-[11px] text-slate-300">
-                © 2025 cnotely. All rights reserved.
+                {{ $t('settings.about.copyright') }}
               </p>
             </div>
           </div>
@@ -704,8 +718,8 @@
     <dialog ref="confirmDialog" class="confirm-dialog">
       <p class="text-sm text-slate-700 mb-4">{{ confirmMsg }}</p>
       <div class="flex gap-2 justify-end">
-        <button class="btn-secondary" @click="doCancel">取消</button>
-        <button class="danger-btn" @click="doConfirm">确定</button>
+              <button class="btn-secondary" @click="doCancel">{{ $t('common.cancel') }}</button>
+        <button class="danger-btn" @click="doConfirm">{{ $t('common.confirm') }}</button>
       </div>
     </dialog>
   </div>
@@ -727,6 +741,7 @@ import {
 } from "lucide-vue-next";
 import { useSheetWindow } from "../composables/useSheetWindow";
 import { useSettings } from "../composables/useSettings";
+import { useI18n } from "../locales/i18n.js";
 
 const emit = defineEmits(["close"]);
 
@@ -750,31 +765,21 @@ const {
 const { get, set, init, persist, exportAllData, importAllData, clearAllCards, resetToFactory, getStorageStats, wallpaperPresets: presets } = useSettings();
 
 // 显示值 <-> 存储值映射
-const layoutToStorage = { '自动': 'auto', '自由': 'free' }
-const layoutToDisplay = { 'auto': '自动', 'free': '自由' }
-const cardTypeToStorage = { '记忆卡': 'qa', '文章卡': 'article' }
-const cardTypeToDisplay = { 'qa': '记忆卡', 'article': '文章卡' }
-const durToMin = { '15分钟': 15, '25分钟': 25, '45分钟': 45 }
-const minToDur = { 15: '15分钟', 25: '25分钟', 45: '45分钟' }
-const shortToMin = { '5分钟': 5, '10分钟': 10 }
-const minToShort = { 5: '5分钟', 10: '10分钟' }
-const cycleToNum = { '3个': 3, '4个': 4, '5个': 5 }
-const numToCycle = { 3: '3个', 4: '4个', 5: '5个' }
-const longDurToMin = { '15分钟': 15, '20分钟': 20, '30分钟': 30 }
-const minToLongDur = { 15: '15分钟', 20: '20分钟', 30: '30分钟' }
 
-// 外观设置
+
 const activeTab = ref("appearance");
 
-const tabs = [
-  { id: "appearance", label: "外观", icon: Palette },
-  { id: "desktop", label: "桌面", icon: LayoutGrid },
-  { id: "card", label: "卡片", icon: CreditCard },
-  { id: "review", label: "复习", icon: BrainCircuit },
-  { id: "pomodoro", label: "番茄钟", icon: Timer },
-  { id: "data", label: "数据", icon: Database },
-  { id: "about", label: "关于", icon: Info },
-];
+const { t } = useI18n()
+
+const tabs = computed(() => [
+  { id: "appearance", label: t('settings.tabs.appearance'), icon: Palette },
+  { id: "desktop", label: t('settings.tabs.desktop'), icon: LayoutGrid },
+  { id: "card", label: t('settings.tabs.card'), icon: CreditCard },
+  { id: "review", label: t('settings.tabs.review'), icon: BrainCircuit },
+  { id: "pomodoro", label: t('settings.tabs.pomodoro'), icon: Timer },
+  { id: "data", label: t('settings.tabs.data'), icon: Database },
+  { id: "about", label: t('settings.tabs.about'), icon: Info },
+]);
 
 // 外观
 const selectedWallpaper = ref(0);
@@ -784,15 +789,26 @@ const barOpacity = ref(50);
 const reduceMotion = ref(false);
 const dockZoom = ref(true);
 const globalTheme = ref('light');
-const globalThemeLabel = computed(() => globalTheme.value === 'light' ? '浅色' : '深色');
+const themeOptions = computed(() => [
+  { value: 'light', label: t('settings.appearance.light') },
+  { value: 'dark', label: t('settings.appearance.dark') },
+]);
 
 // 桌面
-const layoutMode = ref("自动");
+const layoutMode = ref("auto");
+const layoutOptions = computed(() => [
+  { value: 'auto', label: t('settings.desktop.autoLayout') },
+  { value: 'free', label: t('settings.desktop.freeLayout') },
+]);
 const iconGap = ref(90);
 const showIconLabels = ref(true);
 const trashDirectDelete = ref(false);
 // 卡片
-const defaultCardType = ref("记忆卡");
+const defaultCardType = ref("qa");
+const cardTypeOptions = computed(() => [
+  { value: 'qa', label: t('settings.card.qaCard') },
+  { value: 'article', label: t('settings.card.articleCard') },
+]);
 const flipSpeed = ref(500);
 const flip3d = ref(true);
 const flipPerspective = ref(1000);
@@ -802,11 +818,16 @@ const articleWidth = ref(350);
 
 // 复习
 const reviewTheme = ref('system');
-const reviewThemeOptions = [
-  { value: 'system', label: '跟随桌面' },
-  { value: 'light', label: '浅色' },
-  { value: 'dark', label: '深色' },
-];
+const reviewThemeOptions = computed(() => [
+  { value: 'system', label: t('settings.review.themeSystem') },
+  { value: 'light', label: t('settings.review.themeLight') },
+  { value: 'dark', label: t('settings.review.themeDark') },
+]);
+const { locale, setLocale, locales: localeList } = useI18n()
+const localeOptions = computed(() => [
+  { value: 'zh-CN', label: t('settings.about.chinese') },
+  { value: 'en', label: t('settings.about.english') },
+])
 const initialInterval = ref(1);
 const easeFactor = ref(2.5);
 const minIntervalMult = ref(1.3);
@@ -815,10 +836,29 @@ const showEbbinghaus = ref(true);
 const shuffleCards = ref(false);
 
 // 番茄钟
-const focusDuration = ref("25分钟");
-const shortBreak = ref("5分钟");
-const longBreakCycle = ref("4个");
-const longBreakDuration = ref("20分钟");
+const focusDuration = ref("25");
+const focusDurationOptions = computed(() => [
+  { value: '15', label: '15' + (t('settings.pomodoro.minutes') || '分钟') },
+  { value: '25', label: '25' + (t('settings.pomodoro.minutes') || '分钟') },
+  { value: '45', label: '45' + (t('settings.pomodoro.minutes') || '分钟') },
+]);
+const shortBreak = ref("5");
+const shortBreakOptions = computed(() => [
+  { value: '5', label: '5' + (t('settings.pomodoro.minutes') || '分钟') },
+  { value: '10', label: '10' + (t('settings.pomodoro.minutes') || '分钟') },
+]);
+const longBreakCycle = ref("4");
+const longBreakCycleOptions = computed(() => [
+  { value: '3', label: '3' + (t('settings.pomodoro.cycles') || '个') },
+  { value: '4', label: '4' + (t('settings.pomodoro.cycles') || '个') },
+  { value: '5', label: '5' + (t('settings.pomodoro.cycles') || '个') },
+]);
+const longBreakDuration = ref("20");
+const longBreakDurationOptions = computed(() => [
+  { value: '15', label: '15' + (t('settings.pomodoro.minutes') || '分钟') },
+  { value: '20', label: '20' + (t('settings.pomodoro.minutes') || '分钟') },
+  { value: '30', label: '30' + (t('settings.pomodoro.minutes') || '分钟') },
+]);
 const pomodoroSound = ref(true);
 const desktopNotify = ref(true);
 const autoStartPomodoro = ref(false);
@@ -848,11 +888,11 @@ async function loadSettings() {
   dockZoom.value = s.dockZoom ?? true
   globalTheme.value = s.theme ?? 'light'
 
-  layoutMode.value = layoutToDisplay[s.layoutMode] || '自动'
+  layoutMode.value = s.layoutMode || 'auto'
   iconGap.value = s.iconGap ?? 90
   showIconLabels.value = s.showIconLabels ?? true
   trashDirectDelete.value = s.trashDirectDelete ?? false
-  defaultCardType.value = cardTypeToDisplay[s.defaultCardType] || '记忆卡'
+  defaultCardType.value = s.defaultCardType || 'qa'
   flipSpeed.value = s.flipSpeed ?? 500
   flip3d.value = s.flip3d ?? true
   flipPerspective.value = s.flipPerspective ?? 1000
@@ -867,11 +907,13 @@ async function loadSettings() {
   showEbbinghaus.value = s.showEbbinghaus ?? true
   shuffleCards.value = s.shuffleCards ?? false
   reviewTheme.value = s.reviewTheme ?? 'system'
+  locale.value = s.locale ?? 'zh-CN'
+  setLocale(locale.value)
 
-  focusDuration.value = minToDur[s.focusDuration] || '25分钟'
-  shortBreak.value = minToShort[s.shortBreak] || '5分钟'
-  longBreakCycle.value = numToCycle[s.longBreakCycle] || '4个'
-  longBreakDuration.value = minToLongDur[s.longBreakDuration] || '20分钟'
+  focusDuration.value = String(s.focusDuration || 25)
+  shortBreak.value = String(s.shortBreak || 5)
+  longBreakCycle.value = String(s.longBreakCycle || 4)
+  longBreakDuration.value = String(s.longBreakDuration || 20)
   pomodoroSound.value = s.pomodoroSound ?? true
   desktopNotify.value = s.desktopNotify ?? true
   autoStartPomodoro.value = s.autoStartPomodoro ?? false
@@ -898,11 +940,11 @@ watch(reduceMotion, (v) => saveSetting('reduceMotion', v))
 watch(dockZoom, (v) => saveSetting('dockZoom', v))
 watch(globalTheme, (v) => saveSetting('theme', v))
 
-watch(layoutMode, (v) => saveSetting('layoutMode', layoutToStorage[v] || 'auto'))
+watch(layoutMode, (v) => saveSetting('layoutMode', v))
 watch(iconGap, (v) => saveSetting('iconGap', v))
 watch(showIconLabels, (v) => saveSetting('showIconLabels', v))
 watch(trashDirectDelete, (v) => saveSetting('trashDirectDelete', v))
-watch(defaultCardType, (v) => saveSetting('defaultCardType', cardTypeToStorage[v] || 'qa'))
+watch(defaultCardType, (v) => saveSetting('defaultCardType', v))
 watch(flipSpeed, (v) => saveSetting('flipSpeed', v))
 watch(flip3d, (v) => saveSetting('flip3d', v))
 watch(flipPerspective, (v) => saveSetting('flipPerspective', v))
@@ -917,11 +959,12 @@ watch(autoNextCard, (v) => saveSetting('autoNextCard', v))
 watch(showEbbinghaus, (v) => saveSetting('showEbbinghaus', v))
 watch(shuffleCards, (v) => saveSetting('shuffleCards', v))
 watch(reviewTheme, (v) => saveSetting('reviewTheme', v))
+watch(locale, (v) => { saveSetting('locale', v); setLocale(v) })
 
-watch(focusDuration, (v) => saveSetting('focusDuration', durToMin[v] || 25))
-watch(shortBreak, (v) => saveSetting('shortBreak', shortToMin[v] || 5))
-watch(longBreakCycle, (v) => saveSetting('longBreakCycle', cycleToNum[v] || 4))
-watch(longBreakDuration, (v) => saveSetting('longBreakDuration', longDurToMin[v] || 20))
+watch(focusDuration, (v) => saveSetting('focusDuration', Number(v) || 25))
+watch(shortBreak, (v) => saveSetting('shortBreak', Number(v) || 5))
+watch(longBreakCycle, (v) => saveSetting('longBreakCycle', Number(v) || 4))
+watch(longBreakDuration, (v) => saveSetting('longBreakDuration', Number(v) || 20))
 watch(pomodoroSound, (v) => saveSetting('pomodoroSound', v))
 watch(desktopNotify, (v) => saveSetting('desktopNotify', v))
 watch(autoStartPomodoro, (v) => saveSetting('autoStartPomodoro', v))
@@ -982,14 +1025,14 @@ function handleImport() {
       await loadSettings()
       emit('dataChanged')
     } catch (err) {
-      alert('导入失败：' + err.message)
+      alert(t('settings.data.importFailed') + err.message)
     }
   }
   input.click()
 }
 
 function handleClearCards() {
-  showConfirm('确定要清空所有卡片吗？此操作不可撤销。', async () => {
+  showConfirm(t('settings.data.clearCardsConfirm'), async () => {
     await clearAllCards()
     await refreshStats()
     emit('dataChanged')
@@ -997,7 +1040,7 @@ function handleClearCards() {
 }
 
 function handleReset() {
-  showConfirm('确定要重置为出厂设置吗？所有数据将被清除！', async () => {
+  showConfirm(t('settings.data.resetFactoryConfirm'), async () => {
     await resetToFactory()
     await loadSettings()
     emit('dataChanged')

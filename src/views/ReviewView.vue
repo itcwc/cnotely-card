@@ -1,12 +1,12 @@
 <template>
   <div class="review-page h-screen flex flex-col antialiased overflow-hidden select-none" :class="reviewThemeClass">
 
-    <!-- ===== 顶部 macOS 磨砂菜单栏 ===== -->
+    <!-- ===== Top macOS frosted menu bar ===== -->
     <header class="review-menubar absolute top-0 left-0 right-0 h-7 flex items-center justify-between px-4 z-50">
       <div class="flex items-center gap-4">
         <router-link to="/" class="flex items-center gap-1.5 review-link">
           <ArrowLeft :size="12" />
-          <span class="text-xs">返回画布</span>
+          <span class="text-xs">{{ $t('review.back') }}</span>
         </router-link>
         <span class="text-xs font-semibold tracking-tight flex items-center gap-1 review-title">
           <Zap :size="12" class="text-amber-400" /> {{ activeCategoryName }}
@@ -14,13 +14,13 @@
         <span class="text-xs font-mono review-counter">{{ Math.min(currentIndex + 1, sessionDeck.length) }} / {{ sessionDeck.length }}</span>
       </div>
       <div class="flex items-center gap-3">
-        <button @click="showResetConfirm = true" class="text-xs review-reset-btn flex items-center gap-1" title="重置当前分类所有卡片的学习进度">
-          <RotateCcw :size="12" /> 重置进度
+        <button @click="showResetConfirm = true" class="text-xs review-reset-btn flex items-center gap-1">
+          <RotateCcw :size="12" /> {{ $t('review.resetProgress') }}
         </button>
         <div class="flex items-center gap-1.5 text-[10px] review-kbd-hints">
-          <kbd class="review-kbd">Space</kbd>翻面
-          <kbd class="review-kbd">1</kbd>没记住
-          <kbd class="review-kbd">2</kbd>已掌握
+          <kbd class="review-kbd">Space</kbd>{{ $t('review.shortcutHint') }}
+          <kbd class="review-kbd">1</kbd>{{ $t('review.rateForgot') }}
+          <kbd class="review-kbd">2</kbd>{{ $t('review.rateMaster') }}
         </div>
         <span class="text-xs font-medium review-clock">{{ currentDate }}</span>
         <span class="text-xs font-medium review-clock">{{ currentTime }}</span>
@@ -29,27 +29,27 @@
 
     <div class="flex-1 flex relative overflow-hidden" style="padding-top: 28px;">
 
-      <!-- ===== 侧边栏 — 磨砂玻璃 ===== -->
+      <!-- ===== Sidebar — frosted glass ===== -->
       <aside class="review-sidebar flex flex-col border-r z-10 shrink-0 transition-all duration-300 ease-in-out"
         :class="sidebarCollapsed ? 'w-12' : 'w-60'">
-        <!-- 折叠按钮 -->
+        <!-- Collapse button -->
         <div class="flex items-center justify-between px-2 h-8 border-b shrink-0 review-sidebar-hd">
           <button @click="sidebarCollapsed = !sidebarCollapsed" class="w-7 h-6 flex items-center justify-center rounded review-sidebar-toggle">
             <PanelLeftClose v-if="!sidebarCollapsed" :size="14" />
             <PanelLeftOpen v-else :size="14" />
           </button>
-          <span v-if="!sidebarCollapsed" class="text-[10px] font-bold tracking-wider uppercase review-sidebar-title">复习牌组</span>
+          <span v-if="!sidebarCollapsed" class="text-[10px] font-bold tracking-wider uppercase review-sidebar-title">{{ $t('review.deckTitle') }}</span>
         </div>
 
-        <!-- 牌组列表 -->
+        <!-- Deck list -->
         <div v-if="!sidebarCollapsed" class="flex-1 overflow-y-auto p-2 space-y-2">
           <div class="review-deck-item" :class="{ 'review-deck-active': activeCategoryId === null }" @click="switchCategory(null)">
             <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs shrink-0" style="background: var(--review-accent)">
               <Layers :size="16" />
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="text-sm font-bold truncate review-deck-name">全部卡片</h3>
-              <p class="text-[11px] font-medium mt-0.5 review-deck-meta">共 {{ deck.length }} 张</p>
+              <h3 class="text-sm font-bold truncate review-deck-name">{{ $t('review.allCards') }}</h3>
+              <p class="text-[11px] font-medium mt-0.5 review-deck-meta">{{ $t('review.totalCards', { n: deck.length }) }}</p>
             </div>
             <div v-if="activeCategoryId === null" class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: var(--review-accent)">
               <Check :size="11" class="text-white" />
@@ -65,7 +65,7 @@
             </div>
             <div class="min-w-0 flex-1">
               <h3 class="text-sm font-bold truncate review-deck-name">{{ group.name }}</h3>
-              <p class="text-[11px] font-medium mt-0.5 review-deck-meta">剩余 {{ group.remaining }} 张</p>
+              <p class="text-[11px] font-medium mt-0.5 review-deck-meta">{{ $t('review.groupRemaining', { n: group.remaining }) }}</p>
             </div>
             <div v-if="activeCategoryId === group.categoryId" class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: var(--review-accent)">
               <Check :size="11" class="text-white" />
@@ -74,32 +74,32 @@
           </div>
         </div>
 
-        <!-- 折叠态迷你指示器 -->
+        <!-- Collapsed mini indicator -->
         <div v-else class="flex-1 overflow-y-auto py-2 flex flex-col items-center gap-2">
           <div class="w-6 h-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold shrink-0 cursor-pointer transition-all"
             :style="{ backgroundColor: activeCategoryId === null ? 'var(--review-accent)' : 'var(--review-sidebar-mini-bg, #94a3b8)' }"
-            title="全部卡片" @click="switchCategory(null)">
+            :title="$t('review.allCards')" @click="switchCategory(null)">
             <Layers :size="10" />
           </div>
           <div v-for="group in cardGroups" :key="group.categoryId"
             class="w-6 h-6 rounded-md flex items-center justify-center text-white text-[9px] font-bold shrink-0 cursor-pointer transition-all"
             :class="activeCategoryId === group.categoryId ? 'ring-1 scale-110' : ''"
             :style="{ backgroundColor: group.color || '#64748b', '--tw-ring-color': 'var(--review-accent)' }"
-            :title="group.name + ' - 剩余' + group.remaining + '张'"
+            :title="group.name + ' - ' + $t('review.groupRemainingTitle', { n: group.remaining })"
             @click="switchCategory(group.categoryId)">
             {{ group.remaining }}
           </div>
         </div>
 
-        <!-- 番茄钟 -->
+        <!-- Pomodoro -->
         <div class="shrink-0 border-t review-pomodoro-section transition-all duration-300" :class="sidebarCollapsed ? 'p-1.5' : 'p-3'">
           <div v-if="!sidebarCollapsed" class="review-pomodoro-card rounded-xl p-3 border">
             <div class="flex items-center justify-between text-xs font-bold mb-2 review-pomodoro-hd">
               <div class="flex items-center gap-1.5">
                 <Timer :size="12" class="text-amber-400" />
-                <span>番茄专注钟</span>
+                <span>{{ $t('review.pomodoroTitle') }}</span>
               </div>
-              <span class="text-[10px] review-pomodoro-stats">今日 {{ todayCount }} 个 · 累计 {{ totalMinutes }} 分钟</span>
+              <span class="text-[10px] review-pomodoro-stats">{{ $t('review.pomodoroStats', { today: todayCount, total: totalMinutes }) }}</span>
             </div>
             <div class="w-full h-1 rounded-full mb-2 overflow-hidden review-progress-track">
               <div class="h-full rounded-full transition-all duration-1000 ease-linear"
@@ -111,9 +111,9 @@
               {{ pomodoroDisplay }}
             </div>
             <div class="flex gap-1.5">
-              <button @click="togglePomodoro" class="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                :class="pomodoroRunning ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'review-pomodoro-start'">
-                {{ pomodoroRunning ? '暂停' : (pomodoroSeconds < pomodoroTotal ? '继续' : '开始专注') }}
+              <button @click="togglePomodoro" class="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors review-pomodoro-start"
+                >
+                {{ pomodoroRunning ? $t('review.pause') : (pomodoroSeconds < pomodoroTotal ? $t('review.continue') : $t('review.startFocus')) }}
               </button>
               <button v-if="pomodoroRunning || pomodoroSeconds < pomodoroTotal" @click="resetPomodoro"
                 class="px-2 py-1.5 rounded-lg text-xs transition-colors review-pomodoro-reset">
@@ -135,48 +135,48 @@
         </div>
       </aside>
 
-      <!-- ===== 主内容区 ===== -->
+      <!-- ===== Main content area ===== -->
       <main class="flex-1 flex flex-col items-center justify-center p-6 relative">
 
-        <!-- QA 卡片（3D 翻转） -->
+        <!-- QA Card (3D flip) -->
         <div v-if="!isComplete && !isArticleCard" class="relative" :style="{ ...cardSize, perspective: settings.flipPerspective + 'px' }">
           <div
             :class="['absolute inset-0 w-full h-full cursor-pointer z-30', settings.flip3d ? 'transform-style-3d' : '', flipContainerClass, slideDirection]"
             :style="{ transition: `transform ${settings.flipSpeed}ms cubic-bezier(0.4,0,0.2,1)` }"
             @click="flipCurrentCard">
-            <!-- 正面 — 纸质感卡片 -->
+            <!-- Front — paper texture -->
             <div :class="['absolute inset-0 review-card-front rounded-xl flex flex-col overflow-hidden', settings.flip3d ? 'backface-hidden' : '']"
               :style="[flipFrontStyle]">
-              <!-- 顶部渐变条 + 分类徽章 -->
+              <!-- Top gradient bar + category badge -->
               <div class="shrink-0 relative" :style="cardGradientStyle">
                 <span class="review-category-badge" :style="{ backgroundColor: cardCategoryInfo.color }">
                   {{ cardCategoryInfo.name }}
                 </span>
               </div>
-              <!-- 卡片内容 — 问题 -->
+              <!-- Card content — question -->
               <div class="flex-1 flex flex-col overflow-hidden px-6 pt-4 pb-4">
                 <div class="review-prose max-w-none flex-1 overflow-y-auto pr-1 review-scroll" :style="questionTextStyle" v-html="questionHtml"></div>
               </div>
-              <!-- 底部来源链接 -->
+              <!-- Footer source link -->
               <div v-if="currentCard.source" class="shrink-0 flex items-center gap-1.5 px-6 pb-3 pt-1 text-[11px] review-card-footer">
                 <Link :size="11" class="review-card-footer-icon shrink-0" />
                 <a :href="currentCard.source" target="_blank" @click.stop class="review-card-footer-link truncate">{{ displaySource }}</a>
               </div>
             </div>
-            <!-- 背面 — 深色答题面 -->
+            <!-- Back — dark answer face -->
             <div :class="['absolute inset-0 review-card-back rounded-xl flex flex-col overflow-hidden', settings.flip3d ? 'backface-hidden rotate-y-180' : '']"
               :style="[flipBackStyle]">
-              <!-- 顶部渐变条 + 分类徽章 -->
+              <!-- Top gradient bar + category badge -->
               <div class="shrink-0 relative" :style="cardGradientStyle">
                 <span class="review-category-badge" :style="{ backgroundColor: cardCategoryInfo.color }">
                   {{ cardCategoryInfo.name }}
                 </span>
               </div>
-              <!-- 卡片内容 — 答案 -->
+              <!-- Card content — answer -->
               <div class="flex-1 flex flex-col overflow-hidden px-6 pt-3 pb-4">
                 <div class="review-prose-answer max-w-none flex-1 overflow-y-auto pr-1 review-scroll" :style="questionTextStyle" v-html="answerHtml"></div>
               </div>
-              <!-- 底部来源链接 -->
+              <!-- Footer source link -->
               <div v-if="currentCard.source" class="shrink-0 flex items-center gap-1.5 px-6 pb-3 pt-1 text-[11px] review-card-footer">
                 <Link :size="11" class="review-card-footer-icon shrink-0" />
                 <a :href="currentCard.source" target="_blank" @click.stop class="review-card-footer-link truncate">{{ displaySource }}</a>
@@ -184,27 +184,27 @@
             </div>
           </div>
 
-          <!-- 卡片层叠阴影 -->
+          <!-- Card stack shadows -->
           <div :class="['absolute inset-0 w-full h-full review-card-shadow rounded-xl pointer-events-none transition-all duration-300 z-20', shadow1Class]" />
           <div :class="['absolute inset-0 w-full h-full review-card-shadow-ghost rounded-xl pointer-events-none transition-all duration-300 z-10', shadow2Class]" />
 
           <div class="review-resize-handle" @mousedown.stop="startResize"></div>
         </div>
 
-        <!-- 文章卡 -->
+        <!-- Article card -->
         <div v-else-if="!isComplete && isArticleCard" class="relative" :style="cardSize">
           <div :class="['absolute inset-0 review-card-front rounded-xl flex flex-col overflow-hidden transition-transform duration-500', slideDirection]">
-            <!-- 顶部渐变条 + 分类徽章 -->
+            <!-- Top gradient bar + category badge -->
             <div class="shrink-0 relative" :style="cardGradientStyle">
               <span class="review-category-badge" :style="{ backgroundColor: cardCategoryInfo.color }">
                 {{ cardCategoryInfo.name }}
               </span>
             </div>
-            <!-- 卡片内容 -->
+            <!-- Card content -->
             <div class="flex-1 flex flex-col overflow-hidden px-6 pt-3 pb-4">
               <div class="review-prose max-w-none text-sm leading-relaxed overflow-y-auto flex-1 pr-2 review-scroll" v-html="articleHtml"></div>
             </div>
-            <!-- 底部来源链接 -->
+            <!-- Footer source link -->
             <div v-if="currentCard.source" class="shrink-0 flex items-center gap-1.5 px-6 pb-3 pt-1 text-[11px] review-card-footer">
               <Link :size="11" class="review-card-footer-icon shrink-0" />
               <a :href="currentCard.source" target="_blank" class="review-card-footer-link truncate">{{ displaySource }}</a>
@@ -213,52 +213,52 @@
           <div class="review-resize-handle" @mousedown.stop="startResize"></div>
         </div>
 
-        <!-- 完成态 -->
+        <!-- Completion state -->
         <div v-else class="relative w-[440px] h-[300px]">
           <div class="absolute inset-0 review-complete-bg rounded-3xl flex flex-col items-center justify-center p-8 text-center">
             <div class="w-14 h-14 rounded-full flex items-center justify-center mb-4 review-complete-icon">
               <PartyPopper :size="28" />
             </div>
-            <h3 class="text-lg font-bold review-complete-title">太棒了！今日复习已全部完成</h3>
-            <p class="text-xs mt-2 review-complete-desc">共复习 {{ sessionDeck.length }} 张卡片，知识已入库。<template v-if="nextDueInfo">下一批卡片 {{ nextDueInfo }} 到达。</template></p>
+            <h3 class="text-lg font-bold review-complete-title">{{ $t('review.completeTitle') }}</h3>
+            <p class="text-xs mt-2 review-complete-desc">{{ $t('review.completeDesc', { n: sessionDeck.length }) }}<template v-if="nextDueInfo">{{ $t('review.nextDue', { time: nextDueInfo }) }}</template></p>
           </div>
         </div>
 
-        <!-- 评分按钮组 -->
+        <!-- Rating buttons group -->
         <div v-if="!isComplete"
           :class="['mt-8 flex items-center gap-6 z-10 transition-all duration-300', { 'opacity-0 pointer-events-none': isComplete }]">
           <button @click="handleCardReview('left')" class="review-rate-btn review-rate-forget">
             <div class="review-rate-icon review-rate-icon-forget">
               <X :size="24" />
             </div>
-            <span class="text-xs font-bold tracking-wider">没记住 (1)</span>
+            <span class="text-xs font-bold tracking-wider">{{ $t('review.rateForgot') }} (1)</span>
             <span class="text-[10px] font-medium review-rate-label">{{ forgetLabel }}</span>
           </button>
           <button @click="handleCardReview('right')" class="review-rate-btn review-rate-master">
             <div class="review-rate-icon review-rate-icon-master">
               <Check :size="24" />
             </div>
-            <span class="text-xs font-bold tracking-wider">已掌握 (2)</span>
+            <span class="text-xs font-bold tracking-wider">{{ $t('review.rateMaster') }} (2)</span>
             <span class="text-[10px] font-medium review-rate-label">{{ masterLabel }}</span>
           </button>
         </div>
 
-        <!-- 艾宾浩斯 & 翻转提示（卡片外 — 按钮下方） -->
+        <!-- Ebbinghaus & flip hint (outside card — below buttons) -->
         <div v-if="!isComplete && !isArticleCard" class="flex flex-col items-center gap-1.5 mt-4 z-10">
           <div v-if="showEbbinghaus" class="text-xs font-medium flex items-center gap-1.5 px-3 py-1 rounded-full review-ebbinghaus-strip"
             :style="ebbinghausColorStyle">
             <span class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: ebbinghausColorStyle.color }"></span>
-            艾宾浩斯判定：{{ ebbinghausStatus.text }}
+            {{ $t('review.ebbinghaus') }}{{ ebbinghausStatus.text }}
           </div>
           <div v-if="!isFlipped" class="text-[11px] review-flip-hint-out flex items-center gap-1">
-            <Lightbulb :size="11" /> 点击卡片或按 <span class="font-semibold" :style="{ color: ebbinghausColorStyle.color }">空格键</span> 揭晓答案
+            <Lightbulb :size="11" /> {{ $t('review.flipHint') }}
           </div>
         </div>
 
       </main>
     </div>
 
-    <!-- ===== 重置确认弹窗 ===== -->
+    <!-- ===== Reset confirmation dialog ===== -->
     <Transition name="reset-fade">
       <div v-if="showResetConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center" @click.self="showResetConfirm = false">
         <div class="review-dialog rounded-2xl p-6 shadow-2xl w-[360px]">
@@ -267,16 +267,16 @@
               <AlertTriangle :size="20" class="text-rose-400" />
             </div>
             <div>
-              <h3 class="text-sm font-bold review-dialog-title">重置学习进度</h3>
-              <p class="text-xs mt-0.5 review-dialog-desc">此操作不可撤销</p>
+              <h3 class="text-sm font-bold review-dialog-title">{{ $t('settings.review.resetProgress') }}</h3>
+              <p class="text-xs mt-0.5 review-dialog-desc">{{ $t('settings.review.resetWarning') }}</p>
             </div>
           </div>
           <p class="text-xs leading-relaxed mb-5 review-dialog-body">
-            将重置当前分类下全部 <span class="text-rose-400 font-bold">{{ sessionDeck.length }}</span> 张卡片的学习进度（复习次数、间隔、难度系数），所有卡片将变为新卡片状态重新开始。
+            {{ $t('settings.review.resetDetail', { n: sessionDeck.length }) }}
           </p>
           <div class="flex gap-2 justify-end">
-            <button @click="showResetConfirm = false" class="px-4 py-2 text-xs font-medium rounded-lg transition-colors review-dialog-cancel">取消</button>
-            <button @click.stop="confirmResetProgress" class="px-4 py-2 text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-colors">确认重置</button>
+            <button @click="showResetConfirm = false" class="px-4 py-2 text-xs font-medium rounded-lg transition-colors review-dialog-cancel">{{ $t('common.cancel') }}</button>
+            <button @click.stop="confirmResetProgress" class="px-4 py-2 text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-colors">{{ $t('common.confirm') }}</button>
           </div>
         </div>
       </div>
@@ -289,12 +289,14 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Marked } from 'marked'
+import { useI18n } from '../locales/i18n'
 import { ArrowLeft, HelpCircle, Link, X, Check, PartyPopper, Zap, Lightbulb, Timer, RotateCcw, Play, Pause, PanelLeftClose, PanelLeftOpen, ChevronRight, Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal, Layers, AlertTriangle } from 'lucide-vue-next'
 import { useCardStore } from '../composables/useCardStore'
 import { useSettings } from '../composables/useSettings'
 import { db } from '../db'
 import { usePomodoro } from '../composables/usePomodoro'
 
+const { t, locale } = useI18n()
 const markedInstance = new Marked({ breaks: true, gfm: true })
 
 const iconComponents = { Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal }
@@ -311,12 +313,11 @@ const router = useRouter()
 const { reviewDeck, categories, allCards, initDesktop, updateCard, reviewCard, loadAllCards } = useCardStore()
 const { settings } = useSettings()
 
-// ===== 主题 =====
+// ===== Theme =====
 const reviewThemeClass = computed(() => {
   const rt = settings.value.reviewTheme || 'system'
   if (rt === 'light') return 'review-light'
   if (rt === 'dark') return 'review-dark'
-  // system: 跟随桌面主题
   return settings.value.theme === 'dark' ? 'review-dark' : 'review-light'
 })
 
@@ -343,14 +344,14 @@ function switchCategory(catId) {
 }
 
 function startSession() {
-  let deck = [...filteredDeck.value]
+  let dk = [...filteredDeck.value]
   if (shuffleCards.value) {
-    for (let i = deck.length - 1; i > 0; i--) {
+    for (let i = dk.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]]
+      [dk[i], dk[j]] = [dk[j], dk[i]]
     }
   }
-  sessionDeck.value = deck
+  sessionDeck.value = dk
   currentIndex.value = 0
   isFlipped.value = false
   isComplete.value = false
@@ -358,9 +359,9 @@ function startSession() {
 }
 
 const activeCategoryName = computed(() => {
-  if (activeCategoryId.value === null) return '画布卡片复习'
+  if (activeCategoryId.value === null) return t('review.cardDefaultTitle')
   const group = cardGroups.value.find(g => g.categoryId === activeCategoryId.value)
-  return group ? group.name : '画布卡片复习'
+  return group ? group.name : t('review.cardDefaultTitle')
 })
 
 const currentIndex = ref(0)
@@ -390,7 +391,7 @@ const cardGroups = computed(() => {
       const cat = categories.value.find(c => c.id === card.categoryId)
       groupMap.set(catId, {
         categoryId: catId,
-        name: cat?.name || '未分类',
+        name: cat?.name || t('common.unknown'),
         color: card.iconColor || '#64748b',
         iconComp: cat?.iconComp || null,
         remaining: 0,
@@ -412,7 +413,7 @@ const cardCategoryInfo = computed(() => {
   const card = currentCard.value
   const color = card.iconColor || '#64748b'
   const cat = categories.value.find(c => c.id === card.categoryId)
-  const name = cat?.name || card.tag || '未分类'
+  const name = cat?.name || card.tag || t('common.unknown')
   return { color, name }
 })
 
@@ -436,7 +437,7 @@ const articleHtml = computed(() => {
 })
 
 const questionHtml = computed(() => markedInstance.parse(currentCard.value.q || ''))
-const answerHtml = computed(() => markedInstance.parse(currentCard.value.a || '未设置答案'))
+const answerHtml = computed(() => markedInstance.parse(currentCard.value.a || t('review.noAnswer')))
 
 const cardSize = computed(() => {
   const w = customWidth.value || currentCard.value.windowWidth || (isArticleCard.value ? 350 : 310)
@@ -478,22 +479,22 @@ const displaySource = computed(() => {
 
 const ebbinghausStatus = computed(() => {
   const card = currentCard.value
-  if (card.reviewCount === 0 && card.nextReviewAt === 0) return { text: '新卡片', type: 'new' }
+  if (card.reviewCount === 0 && card.nextReviewAt === 0) return { text: t('review.newCard'), type: 'new' }
   const now = Date.now()
-  if (card.nextReviewAt <= now) return { text: '已逾期', type: 'overdue' }
+  if (card.nextReviewAt <= now) return { text: t('review.overdue'), type: 'overdue' }
   const diff = card.nextReviewAt - now
   const days = Math.ceil(diff / (24 * 60 * 60 * 1000))
-  if (days <= 0) return { text: '今天到期', type: 'today' }
-  return { text: `${days}天后到期`, type: 'pending' }
+  if (days <= 0) return { text: t('review.dueToday'), type: 'today' }
+  return { text: t('review.dueInDays', { n: days }), type: 'pending' }
 })
 
 const ebbinghausColorStyle = computed(() => {
   const type = ebbinghausStatus.value.type
   const colors = {
-    new: '#60a5fa',      // blue-400
-    overdue: '#f87171',  // rose-400
-    today: '#fbbf24',    // amber-400
-    pending: '#34d399',  // emerald-400
+    new: '#60a5fa',
+    overdue: '#f87171',
+    today: '#fbbf24',
+    pending: '#34d399',
   }
   const color = colors[type] || '#94a3b8'
   return {
@@ -507,7 +508,7 @@ const autoNextCard = computed(() => settings.value.autoNextCard ?? true)
 const showEbbinghaus = computed(() => settings.value.showEbbinghaus ?? true)
 const shuffleCards = computed(() => settings.value.shuffleCards ?? false)
 
-const forgetLabel = computed(() => '10分钟后重现')
+const forgetLabel = computed(() => t('review.forgetLabel'))
 
 const masterLabel = computed(() => {
   const card = currentCard.value
@@ -516,7 +517,7 @@ const masterLabel = computed(() => {
   else if (card.reviewCount === 1) interval = 6
   else interval = Math.round((card.interval || 0) * (card.easeFactor || 2.5))
   if (interval <= 0) interval = 1
-  return `${interval}天后再次复习`
+  return t('review.masterLabel', { n: interval })
 })
 
 const nextDueInfo = computed(() => {
@@ -528,11 +529,11 @@ const nextDueInfo = computed(() => {
   const next = upcoming[0]
   const diff = next.nextReviewAt - now
   const minutes = Math.ceil(diff / (60 * 1000))
-  if (minutes < 60) return `${minutes} 分钟后`
+  if (minutes < 60) return t('review.timeFormat.minutes', { n: minutes })
   const hours = Math.ceil(diff / (60 * 60 * 1000))
-  if (hours < 24) return `${hours} 小时后`
+  if (hours < 24) return t('review.timeFormat.hours', { n: hours })
   const days = Math.ceil(diff / (24 * 60 * 60 * 1000))
-  return `${days} 天后`
+  return t('review.timeFormat.days', { n: days })
 })
 
 const shadow1Class = computed(() => {
@@ -629,12 +630,13 @@ function handleKeydown(e) {
 
 function updateTime() {
   const now = new Date()
-  currentTime.value = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  currentTime.value = now.toLocaleTimeString(locale.value === 'en' ? 'en-US' : 'zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  const weekdays = t('review.dateFormat.weekdays')
   const month = now.getMonth() + 1
   const day = now.getDate()
   const weekday = weekdays[now.getDay()]
-  currentDate.value = `${month}月${day}日 ${weekday}`
+  const dateFormat = t('review.dateFormat.format')
+  currentDate.value = dateFormat.replace('{month}', month).replace('{day}', day).replace('{weekday}', weekday)
 }
 
 let clockTimer = null
@@ -675,14 +677,12 @@ onUnmounted(() => {
 .review-light {
   --review-bg: #f1f5f9;
   --review-bg-dot: #cbd5e1;
-  /* 顶栏 */
   --review-menubar-bg: rgba(255, 255, 255, 0.55);
   --review-menubar-border: rgba(0, 0, 0, 0.08);
   --review-menubar-text: #334155;
   --review-menubar-muted: #64748b;
   --review-menubar-link: #64748b;
   --review-menubar-link-hover: #1e293b;
-  /* 侧边栏 */
   --review-sidebar-bg: rgba(255, 255, 255, 0.35);
   --review-sidebar-border: rgba(0, 0, 0, 0.06);
   --review-sidebar-hd-border: rgba(0, 0, 0, 0.05);
@@ -691,7 +691,6 @@ onUnmounted(() => {
   --review-sidebar-toggle-hover-bg: rgba(0, 0, 0, 0.06);
   --review-sidebar-toggle-hover-text: #475569;
   --review-sidebar-mini-bg: #94a3b8;
-  /* 牌组项 */
   --review-deck-bg: rgba(255, 255, 255, 0.4);
   --review-deck-border: rgba(0, 0, 0, 0.05);
   --review-deck-hover-bg: rgba(255, 255, 255, 0.7);
@@ -700,7 +699,6 @@ onUnmounted(() => {
   --review-deck-name: #1e293b;
   --review-deck-meta: #94a3b8;
   --review-deck-arrow: #cbd5e1;
-  /* 番茄钟 */
   --review-pomodoro-section-border: rgba(0, 0, 0, 0.05);
   --review-pomodoro-card-bg: rgba(255, 255, 255, 0.5);
   --review-pomodoro-card-border: rgba(0, 0, 0, 0.05);
@@ -716,23 +714,19 @@ onUnmounted(() => {
   --review-pomodoro-reset-hover-text: #64748b;
   --review-progress-track: #e2e8f0;
   --review-progress-idle: #cbd5e1;
-  /* 卡片正面 */
   --review-card-front-bg: #ffffff;
   --review-card-front-border: rgba(0, 0, 0, 0.06);
   --review-card-front-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.05), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);
   --review-card-front-shadow-hover: 0 1px 3px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.06), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);
   --review-card-meta: #94a3b8;
-  /* 卡片背面 */
   --review-card-back-bg: #1a2332;
   --review-card-back-border: rgba(0, 0, 0, 0.15);
   --review-card-back-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.2);
   --review-card-back-meta: #788296;
   --review-flip-hint: #94a3b8;
-  /* 卡片阴影 */
   --review-card-shadow-bg: rgba(255,255,255,0.4);
   --review-card-shadow-border: rgba(0,0,0,0.04);
   --review-card-shadow-ghost-bg: rgba(255,255,255,0.2);
-  /* 评分按钮 */
   --review-rate-forget-bg: rgba(255,255,255,0.5);
   --review-rate-forget-border: rgba(239,68,68,0.15);
   --review-rate-forget-hover-bg: rgba(239,68,68,0.06);
@@ -742,14 +736,12 @@ onUnmounted(() => {
   --review-rate-master-hover-bg: rgba(16,185,129,0.06);
   --review-rate-master-hover-border: rgba(16,185,129,0.3);
   --review-rate-label: #94a3b8;
-  /* 完成态 */
   --review-complete-bg: rgba(255,255,255,0.4);
   --review-complete-border: rgba(0,0,0,0.04);
   --review-complete-icon-bg: rgba(16,185,129,0.08);
   --review-complete-icon-text: #10b981;
   --review-complete-title: #1e293b;
   --review-complete-desc: #94a3b8;
-  /* 弹窗 */
   --review-dialog-bg: rgba(255,255,255,0.92);
   --review-dialog-title: #1e293b;
   --review-dialog-desc: #94a3b8;
@@ -757,7 +749,6 @@ onUnmounted(() => {
   --review-dialog-cancel-bg: #f1f5f9;
   --review-dialog-cancel-text: #64748b;
   --review-dialog-cancel-hover: #e2e8f0;
-  /* prose 文字 */
   --review-prose-heading: #1e293b;
   --review-prose-text: #334155;
   --review-prose-code-bg: #f1f5f9;
@@ -941,7 +932,7 @@ onUnmounted(() => {
   color: var(--review-sidebar-toggle-hover-text);
 }
 
-/* 牌组项 */
+/* Deck items */
 .review-deck-item {
   display: flex;
   align-items: center;
@@ -963,7 +954,7 @@ onUnmounted(() => {
 .review-deck-meta { color: var(--review-deck-meta); }
 .review-deck-arrow { color: var(--review-deck-arrow); }
 
-/* 番茄钟 */
+/* Pomodoro */
 .review-pomodoro-section { border-color: var(--review-pomodoro-section-border); }
 .review-pomodoro-card {
   background: var(--review-pomodoro-card-bg);

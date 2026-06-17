@@ -1,0 +1,18 @@
+export default {
+  cancel: 'Cancel',
+  confirm: 'Confirm',
+  save: 'Save',
+  delete: 'Delete',
+  edit: 'Edit',
+  close: 'Close',
+  minimize: 'Minimize',
+  maximize: 'Maximize',
+  restore: 'Restore',
+  open: 'Open',
+  create: 'Create',
+  search: 'Search',
+  loading: 'Loading...',
+  none: 'None',
+  unknown: 'Uncategorized',
+  maximizeRestore: 'Maximize/Restore',
+}

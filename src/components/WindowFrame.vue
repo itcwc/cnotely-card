@@ -18,7 +18,7 @@
         <button
           @click.stop="emit('close')"
           class="traffic-light traffic-light-close"
-          title="关闭"
+          :title="$t('window.close')"
         >
           <svg class="traffic-light-icon" viewBox="0 0 12 12">
             <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -27,7 +27,7 @@
         <button
           @click.stop="emit('minimize')"
           class="traffic-light traffic-light-minimize"
-          title="最小化"
+          :title="$t('window.minimize')"
         >
           <svg class="traffic-light-icon" viewBox="0 0 12 12">
             <path d="M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -36,7 +36,7 @@
         <button
           @click.stop="toggleMaximize"
           class="traffic-light traffic-light-maximize"
-          :title="isMaximized ? '恢复' : '最大化'"
+          :title="isMaximized ? $t('window.restore') : $t('window.maximize')"
         >
           <svg class="traffic-light-icon" viewBox="0 0 12 12">
             <path d="M3 3h6v6H3z" stroke="currentColor" stroke-width="1.2" fill="none"/>
@@ -67,7 +67,7 @@
             ? (pinned ? 'text-white/90' : 'text-white/50 hover:text-white/80')
             : (pinned ? 'text-black/70' : 'text-black/40 hover:text-black/70')
         ]"
-        :title="pinned ? '取消固定' : '固定'"
+        :title="pinned ? $t('window.unpin') : $t('window.pin')"
       >
         <PinOff v-if="pinned" :size="14" />
         <Pin v-else :size="14" style="transform: rotate(45deg)" />
@@ -100,10 +100,12 @@
 <script setup>
 import { Pin, PinOff, X } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
+import { useI18n } from '../locales/i18n'
+const { t } = useI18n()
 
 const props = defineProps({
   id: { type: String, required: true },
-  title: { type: String, default: '窗口' },
+  title: { type: String, default: 'Window' },
   x: { type: Number, default: 100 },
   y: { type: Number, default: 100 },
   width: { type: Number, default: 400 },

@@ -87,62 +87,38 @@ db.version(8).stores({
   })
 })
 
-const seedCategories = [
-  {
-    slug: 'frontend',
-    name: '技术前端',
-    iconComp: 'Code2',
-    iconColor: '#10b981',
-    tag: '#技术前端',
-    border: 'border-t-emerald-500',
-    order: 0,
-    isDefault: 0,
-  },
-  {
-    slug: 'vocab',
-    name: '核心词汇',
-    iconComp: 'BookOpen',
-    iconColor: '#f97316',
-    tag: '#核心词汇',
-    border: 'border-t-amber-500',
-    order: 1,
-    isDefault: 0,
-  },
-  {
-    slug: 'notes',
-    name: '随手笔记',
-    iconComp: 'Pen',
-    iconColor: '#8b5cf6',
-    tag: '#随手笔记',
-    border: 'border-t-purple-500',
-    order: 2,
-    isDefault: 0,
-  },
-  {
-    slug: 'uncategorized',
-    name: '未分类',
-    iconComp: 'Bookmark',
-    iconColor: '#C8C9CC',
-    tag: '#未分类',
-    border: 'border-t-slate-400',
-    order: 3,
-    isDefault: 1,
-  },
-]
+import zhCNSeed from '../locales/zh-CN/seed.js'
+import enSeed from '../locales/en/seed.js'
 
-const seedCards = [
-  { _categorySlug: 'frontend', question: '如何在 CSS 中利用多层 box-shadow 完美优雅地模拟出卡片层叠堆起的物理厚度？', answer: '使用逗号分隔多组阴影偏移量即可。', source: 'https://developer.mozilla.org', createdAt: Date.now(), sortOrder: 100 },
-  { _categorySlug: 'frontend', question: 'Tailwind CSS 的 perspective 属性如何开启 3D 空间？', answer: '外层包裹 perspective-1000，内层开启 transform-style-3d', source: 'https://tailwindcss.com', createdAt: Date.now(), sortOrder: 200 },
-  { _categorySlug: 'frontend', question: 'IndexedDB 的最大存储容量是多少？', answer: '一般来说由浏览器和硬盘决定，通常无固定上限限制。', source: '', createdAt: Date.now(), sortOrder: 300 },
-  { _categorySlug: 'vocab', question: 'ephemeral', answer: 'adj. 朝生暮死、转瞬即逝的', source: 'https://ldoceonline.com', createdAt: Date.now(), sortOrder: 400 },
-  { _categorySlug: 'vocab', question: 'serendipity', answer: 'n. 缘分、不期而遇的小确幸', source: 'https://ldoceonline.com', createdAt: Date.now(), sortOrder: 500 },
-  { _categorySlug: 'notes', question: '今晚去超市记得买咖啡豆和全脂牛奶。📢', answer: '未设置反面内容', source: '', createdAt: Date.now(), sortOrder: 600 },
-  { _categorySlug: 'notes', question: '看完了《设计心理学》，需要整理一份拟物化心流笔记。', answer: '未设置反面内容', source: '', createdAt: Date.now(), sortOrder: 700 },
-  {
-    _categorySlug: 'frontend',
-    type: 'article',
-    sortOrder: 800,
-    question: `# cnotely的产品哲学：为什么我们需要记忆卡片牌桌？
+const seedLocales = { 'zh-CN': zhCNSeed, en: enSeed }
+
+function getSeedData(locale) {
+  const l = seedLocales[locale] || seedLocales['zh-CN']
+  const now = Date.now()
+
+  const categories = [
+    { slug: 'frontend', name: l.categories.frontend, iconComp: 'Code2', iconColor: '#10b981', tag: l.tags.frontend, border: 'border-t-emerald-500', order: 0, isDefault: 0 },
+    { slug: 'vocab', name: l.categories.vocab, iconComp: 'BookOpen', iconColor: '#f97316', tag: l.tags.vocab, border: 'border-t-amber-500', order: 1, isDefault: 0 },
+    { slug: 'notes', name: l.categories.notes, iconComp: 'Pen', iconColor: '#8b5cf6', tag: l.tags.notes, border: 'border-t-purple-500', order: 2, isDefault: 0 },
+    { slug: 'uncategorized', name: l.categories.uncategorized, iconComp: 'Bookmark', iconColor: '#C8C9CC', tag: l.tags.uncategorized, border: 'border-t-slate-400', order: 3, isDefault: 1 },
+  ]
+
+  const isZh = locale === 'zh-CN'
+
+  const cards = [
+    { _categorySlug: 'frontend', question: isZh ? '如何在 CSS 中利用多层 box-shadow 完美优雅地模拟出卡片层叠堆起的物理厚度？' : 'How to elegantly simulate card stack physical thickness using CSS multi-layer box-shadow?', answer: isZh ? '使用逗号分隔多组阴影偏移量即可。' : 'Use comma-separated multiple shadow offsets.', source: 'https://developer.mozilla.org', createdAt: now, sortOrder: 100 },
+    { _categorySlug: 'frontend', question: isZh ? 'Tailwind CSS 的 perspective 属性如何开启 3D 空间？' : 'How does Tailwind CSS perspective property enable 3D space?', answer: isZh ? '外层包裹 perspective-1000，内层开启 transform-style-3d' : 'Wrap parent with perspective-1000, child uses transform-style-3d.', source: 'https://tailwindcss.com', createdAt: now, sortOrder: 200 },
+    { _categorySlug: 'frontend', question: isZh ? 'IndexedDB 的最大存储容量是多少？' : 'What is the maximum storage capacity of IndexedDB?', answer: isZh ? '一般来说由浏览器和硬盘决定，通常无固定上限限制。' : 'Determined by browser and available disk space; usually no fixed upper limit.', source: '', createdAt: now, sortOrder: 300 },
+    { _categorySlug: 'vocab', question: 'ephemeral', answer: isZh ? 'adj. 朝生暮死、转瞬即逝的' : 'adj. lasting for a very short time; transitory', source: 'https://ldoceonline.com', createdAt: now, sortOrder: 400 },
+    { _categorySlug: 'vocab', question: 'serendipity', answer: isZh ? 'n. 缘分、不期而遇的小确幸' : 'n. the occurrence of happy or beneficial events by chance', source: 'https://ldoceonline.com', createdAt: now, sortOrder: 500 },
+    { _categorySlug: 'notes', question: isZh ? '今晚去超市记得买咖啡豆和全脂牛奶。📢' : 'Remember to buy coffee beans and whole milk tonight. 📢', answer: isZh ? '未设置反面内容' : 'No answer set', source: '', createdAt: now, sortOrder: 600 },
+    { _categorySlug: 'notes', question: isZh ? '看完了《设计心理学》，需要整理一份拟物化心流笔记。' : 'Finished "The Design of Everyday Things" — need to organize skeuomorphic flow notes.', answer: isZh ? '未设置反面内容' : 'No answer set', source: '', createdAt: now, sortOrder: 700 },
+    {
+      _categorySlug: 'frontend',
+      type: 'article',
+      sortOrder: 800,
+      question: isZh
+        ? `# cnotely的产品哲学：为什么我们需要记忆卡片牌桌？
 
 ## 一、无序画布的终结
 
@@ -158,7 +134,7 @@ const seedCards = [
 
 ## 三、物理控制感的回归
 
-人类对空间的记忆远超过对纯文本的记忆。当你把一张卡片从画布的左上角拖到右下角的"技术前端"牌堆时，你的手指、你的眼睛、你的大脑都在参与一次空间编码。
+人类对空间的记忆远超过对纯文本的记忆。当你把一张卡片从画布的左上角拖到右下角的"${l.categories.frontend}"牌堆时，你的手指、你的眼睛、你的大脑都在参与一次空间编码。
 
 这不是简单的数据移动，这是一次**物理仪式**。就像你在书桌上把一本参考书从"待读"堆移到"已读"堆一样，那个动作本身就是记忆的一部分。
 
@@ -171,80 +147,71 @@ const philosophy = {
   metaphor: '空当接龙 = 信息管理',
   ritual: '每一次拖拽都是一次记忆编码',
 }
+\`\`\``
+        : `# The Product Philosophy of cnotely: Why We Need a Memory Card Tableau
+
+## I. The End of Infinite Canvas
+
+Most whiteboards and infinite canvas tools eventually turn into landfills. Human psychology is greedy — boundless containment means unconstrained thinking. cnotely goes the opposite direction, borrowing the metaphor of FreeCell, a desktop game that has captivated millions for decades.
+
+In FreeCell, you only have 4 free cells and 4 home cells. This means every card move, every archive, is a trial of thought under physical constraint.
+
+## II. The "Folded Newspaper" Long-Text Metaphor
+
+Short insights are lightweight; long articles are heavy. In our card grid system, if a long article were the same size as a regular card, no information would peek through; if it were a giant card, it would shatter the canvas like a boulder. So we created the **Vertical Double-Height Newspaper Card**.
+
+It occupies two slots with a natural paper fade-out at the bottom. It doesn't break the layout. When you need deeper reading, tap "Read Full Article" — the immersive dusk-paper reader slides out like silk, giving you the purest reading experience.
+
+## III. The Return of Physical Control
+
+Humans remember spatial relationships far better than plain text. When you drag a card from the top-left canvas to the bottom-right "${l.categories.frontend}" pile, your fingers, your eyes, and your brain all participate in spatial encoding.
+
+This is not simple data movement — it is a **physical ritual**. Just like moving a reference book from the "To Read" pile to the "Read" pile on your desk, that action itself becomes part of your memory.
+
+> Tip: Double-tap the card front to flip, drag to any pile to archive.
+
+\`\`\`js
+// cnotely's core philosophy
+const philosophy = {
+  constraint: 'Physical constraints bring mental clarity',
+  metaphor: 'FreeCell = Information Management',
+  ritual: 'Every drag is a memory encoding',
+}
 \`\`\``,
-    answer: '',
-    source: '',
-    createdAt: Date.now(),
-  },
-]
+      answer: '',
+      source: '',
+      createdAt: now,
+    },
+  ]
 
-const seedApps = [
-  {
-    name: '复习工作台',
-    icon: 'lucide:RotateCwSquare',
-    url: '/review',
-    color: '#1e293b',
-    gridX: 0,
-    gridY: 0,
-    pinned: true,
-    createdAt: Date.now()
-  },
-  {
-    name: 'GitHub',
-    icon: 'https://github.githubassets.com/favicons/favicon.svg',
-    url: 'https://github.com',
-    color: '#ffffff',
-    gridX: 1,
-    gridY: 0,
-    createdAt: Date.now()
-  },
+  const apps = [
+    { name: isZh ? '复习工作台' : 'Review Workbench', icon: 'lucide:RotateCwSquare', url: '/review', color: '#1e293b', gridX: 0, gridY: 0, pinned: true, createdAt: now },
+    { name: 'GitHub', icon: 'https://github.githubassets.com/favicons/favicon.svg', url: 'https://github.com', color: '#ffffff', gridX: 1, gridY: 0, createdAt: now },
+    { name: 'Google', icon: 'https://www.google.com/images/branding/product/ico/googleg_lodp.ico', url: 'https://google.com', color: '#ffffff', gridX: 2, gridY: 0, createdAt: now },
+    { name: 'YouTube', icon: 'https://www.youtube.com/s/desktop/12d6b690/img/favicon_144x144.png', url: 'https://youtube.com', color: '#ffffff', gridX: 0, gridY: 1, createdAt: now },
+    { name: 'Notion', icon: 'https://www.notion.so/images/logo-ios.png', url: 'https://notion.so', color: '#ffffff', gridX: 1, gridY: 1, createdAt: now },
+  ]
 
-  {
-    name: 'Google',
-    icon: 'https://www.google.com/images/branding/product/ico/googleg_lodp.ico',
-    url: 'https://google.com',
-    color: '#ffffff',
-    gridX: 2,
-    gridY: 0,
-    createdAt: Date.now()
-  },
+  return { categories, cards, apps }
+}
 
-  {
-    name: 'YouTube',
-    icon: 'https://www.youtube.com/s/desktop/12d6b690/img/favicon_144x144.png',
-    url: 'https://youtube.com',
-    color: '#ffffff',
-    gridX: 0,
-    gridY: 1,
-    createdAt: Date.now()
-  },
-
-  {
-    name: 'Notion',
-    icon: 'https://www.notion.so/images/logo-ios.png',
-    url: 'https://notion.so',
-    color: '#ffffff',
-    gridX: 1,
-    gridY: 1,
-    createdAt: Date.now()
-  }
-]
-
-export async function seedDatabase() {
+export async function seedDatabase(locale = 'zh-CN') {
   const count = await db.categories.count()
   if (count > 0) return
 
+  const { categories, cards, apps } = getSeedData(locale)
+
   // 插入分类后读取实际分配的 ID（auto-increment 不归零，ID 可能与预设不同）
-  const catIds = await db.categories.bulkAdd(seedCategories, { allKeys: true })
+  const catIds = await db.categories.bulkAdd(categories, { allKeys: true })
 
   // slug → 实际 ID 映射
   const slugToId = {}
-  seedCategories.forEach((cat, i) => {
+  categories.forEach((cat, i) => {
     slugToId[cat.slug] = catIds[i]
   })
 
   // 动态替换卡片 categoryId
-  const cardsWithRealIds = seedCards.map((card) => {
+  const cardsWithRealIds = cards.map((card) => {
     const slug = card._categorySlug
     return {
       ...card,
@@ -254,7 +221,7 @@ export async function seedDatabase() {
   })
 
   await db.cards.bulkAdd(cardsWithRealIds)
-  await db.apps.bulkAdd(seedApps)
+  await db.apps.bulkAdd(apps)
 }
 
 db.version(9).stores({

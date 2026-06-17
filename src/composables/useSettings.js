@@ -30,6 +30,7 @@ const defaults = {
 
   // 复习
   reviewTheme: 'system',
+  locale: 'zh-CN',
   initialInterval: 1,
   easeFactor: 2.5,
   minIntervalMult: 1.3,
@@ -206,17 +207,23 @@ async function clearAllCards() {
 }
 
 async function resetToFactory() {
+  // 保存当前语言设置，重置后恢复
+  let currentLocale = 'zh-CN'
+  try {
+    currentLocale = localStorage.getItem('cnotely-locale') || 'zh-CN'
+  } catch {}
+
   await db.cards.clear()
   await db.apps.clear()
   await db.settings.clear()
   await db.categories.clear()
   _loaded = false
   _loading = null
-  // 重新初始化
+  // 重新初始化 — 传入当前语言生成对应种子数据
   const { seedDatabase } = await import('../db')
-  await seedDatabase()
-  // 重置 settings 为默认值
-  settings.value = { ...defaults }
+  await seedDatabase(currentLocale)
+  // 重置 settings 为默认值，但保留当前语言
+  settings.value = { ...defaults, locale: currentLocale }
   _loaded = true
   await persist()
 }

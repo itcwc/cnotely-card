@@ -7,7 +7,7 @@
           <div class="flex items-center gap-4 flex-1 min-w-0">
             <button @click="closeEditor" :class="['editor-btn editor-btn--ghost', shouldUseDarkTheme ? 'editor-btn--dark' : '']">
               <ChevronLeft :size="16" />
-              <span>收起</span>
+              <span>{{ $t('editor.collapse') }}</span>
             </button>
             <hr :class="['editor-divider', shouldUseDarkTheme ? 'editor-divider--dark' : '']" />
 
@@ -35,7 +35,7 @@
                     <div class="editor-cat-icon" :style="{ background: '#C8C9CC' }">
                       <Bookmark :size="12" class="text-white" />
                     </div>
-                    <span>未归类</span>
+                    <span>{{ $t('editor.unclassified') }}</span>
                   </button>
                   <button
                     v-for="cat in categories"
@@ -55,10 +55,10 @@
                 <input
                   v-model="editSource"
                   type="url"
-                  placeholder="输入来源链接..."
+                  :placeholder="$t('editor.sourcePlaceholder')"
                   :class="['flex-1 min-w-0 text-xs font-medium bg-transparent outline-none truncate', shouldUseDarkTheme ? 'text-slate-300 placeholder:text-slate-600' : 'text-slate-500 placeholder:text-slate-300']"
                 />
-                <a v-if="editSource" :href="editSource" target="_blank" :class="['shrink-0 transition-colors', shouldUseDarkTheme ? 'text-slate-500 hover:text-blue-400' : 'text-slate-400 hover:text-blue-600']" title="在新标签页打开"><ExternalLink :size="12" /></a>
+                <a v-if="editSource" :href="editSource" target="_blank" :class="['shrink-0 transition-colors', shouldUseDarkTheme ? 'text-slate-500 hover:text-blue-400' : 'text-slate-400 hover:text-blue-600']" :title="$t('common.openInNewTab')"><ExternalLink :size="12" /></a>
               </div>
             </div>
           </div>
@@ -70,14 +70,14 @@
               :class="['editor-btn editor-btn--panel', panel === 'front' && !shouldUseDarkTheme ? '' : 'editor-btn--panel-active']"
             >
               <RotateCw :size="14" />
-              <span>{{ panel === 'front' ? '编辑背面' : '编辑正面' }}</span>
+              <span>{{ panel === 'front' ? $t('editor.editBack') : $t('editor.editFront') }}</span>
             </button>
             <span :class="['text-xs font-mono', shouldUseDarkTheme ? 'text-slate-500' : 'text-slate-400']">字数: {{ panel === 'front' ? frontCharCount : backCharCount }}</span>
             <button @click="saveEditor" :class="['editor-btn editor-btn--save', shouldUseDarkTheme ? 'editor-btn--save-dark' : '']">
               <Save :size="14" />
-              <span>保存</span>
+              <span>{{ $t('editor.save') }}</span>
             </button>
-            <button @click="fullscreen = !fullscreen" :class="['editor-btn editor-btn--icon', shouldUseDarkTheme ? 'editor-btn--dark' : '']" :title="fullscreen ? '退出全屏 (Esc)' : '全屏编辑'">
+            <button @click="fullscreen = !fullscreen" :class="['editor-btn editor-btn--icon', shouldUseDarkTheme ? 'editor-btn--dark' : '']" :title="fullscreen ? $t('editor.exitFullscreen') : $t('editor.fullscreen')">
               <Minimize v-if="fullscreen" :size="16" />
               <Maximize v-else :size="16" />
             </button>
@@ -87,21 +87,21 @@
         <div v-if="panel === 'front'" class="flex-1 flex overflow-hidden">
           <div :class="['editor-panel-left', shouldUseDarkTheme ? 'editor-panel-left--dark' : '']">
             <div :class="['editor-panel-titlebar', shouldUseDarkTheme ? 'editor-panel-titlebar--dark' : '']">
-              <span class="flex items-center gap-1"><PenLine :size="11" /> 编辑{{ cardType === 'article' ? '内容' : '问题' }}</span>
+              <span class="flex items-center gap-1"><PenLine :size="11" /> {{ cardType === 'article' ? $t('editor.editContent') : $t('editor.editQuestion') }}</span>
               <span :class="['font-mono', shouldUseDarkTheme ? 'text-emerald-400' : 'text-blue-500']">markdown</span>
             </div>
             <div :class="['editor-toolbar', shouldUseDarkTheme ? 'editor-toolbar--dark' : '']">
-              <button @click="insertMarkdown('front', 'bold')" title="加粗 (Ctrl+B)" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Bold :size="15" /></button>
-              <button @click="insertMarkdown('front', 'italic')" title="斜体 (Ctrl+I)" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Italic :size="15" /></button>
-              <button @click="insertMarkdown('front', 'strikethrough')" title="删除线" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Strikethrough :size="15" /></button>
-              <button @click="insertMarkdown('front', 'ul')" title="无序列表" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><List :size="15" /></button>
-              <button @click="insertMarkdown('front', 'ol')" title="有序列表" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ListOrdered :size="15" /></button>
+              <button @click="insertMarkdown('front', 'bold')" :title="$t('editor.toolbar.bold')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Bold :size="15" /></button>
+              <button @click="insertMarkdown('front', 'italic')" :title="$t('editor.toolbar.italic')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Italic :size="15" /></button>
+              <button @click="insertMarkdown('front', 'strikethrough')" :title="$t('editor.toolbar.strikethrough')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Strikethrough :size="15" /></button>
+              <button @click="insertMarkdown('front', 'ul')" :title="$t('editor.toolbar.bulletList')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><List :size="15" /></button>
+              <button @click="insertMarkdown('front', 'ol')" :title="$t('editor.toolbar.orderedList')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ListOrdered :size="15" /></button>
               <div :class="['editor-toolbar-sep', shouldUseDarkTheme ? 'editor-toolbar-sep--dark' : '']" />
-              <button @click="insertMarkdown('front', 'h1')" title="一级标题" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading1 :size="15" /></button>
-              <button @click="insertMarkdown('front', 'h2')" title="二级标题" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading2 :size="15" /></button>
-              <button @click="insertMarkdown('front', 'h3')" title="三级标题" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading3 :size="15" /></button>
+              <button @click="insertMarkdown('front', 'h1')" :title="$t('editor.toolbar.h1')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading1 :size="15" /></button>
+              <button @click="insertMarkdown('front', 'h2')" :title="$t('editor.toolbar.h2')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading2 :size="15" /></button>
+              <button @click="insertMarkdown('front', 'h3')" :title="$t('editor.toolbar.h3')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading3 :size="15" /></button>
               <div :class="['editor-toolbar-sep', shouldUseDarkTheme ? 'editor-toolbar-sep--dark' : '']" />
-              <button @click="insertMarkdown('front', 'image')" title="插入图片" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ImageIcon :size="15" /></button>
+              <button @click="insertMarkdown('front', 'image')" :title="$t('editor.toolbar.image')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ImageIcon :size="15" /></button>
             </div>
             <div class="flex-1 p-5 flex gap-3 font-mono text-sm leading-relaxed overflow-hidden">
               <div :class="['text-right select-none pr-1 text-xs pt-0.5', shouldUseDarkTheme ? 'text-slate-600' : 'text-slate-300']">
@@ -118,10 +118,10 @@
 
           <div :class="['editor-panel-right', shouldUseDarkTheme ? 'editor-panel-right--dark' : '']">
             <div :class="['editor-panel-titlebar', shouldUseDarkTheme ? 'editor-panel-titlebar--dark' : '']">
-              <span class="flex items-center gap-1"><Eye :size="11" /> 实时预览</span>
+              <span class="flex items-center gap-1"><Eye :size="11" /> {{ $t('editor.preview') }}</span>
               <span :class="['font-medium flex items-center gap-1', shouldUseDarkTheme ? 'text-emerald-400' : 'text-emerald-500']">
                 <span class="w-1.5 h-1.5 rounded-full animate-pulse" :class="shouldUseDarkTheme ? 'bg-emerald-400' : 'bg-emerald-500'" />
-                <span>渲染中</span>
+                <span>{{ $t('editor.rendering') }}</span>
               </span>
             </div>
             <div
@@ -135,22 +135,22 @@
         <div v-else class="flex-1 flex overflow-hidden">
           <div :class="['editor-panel-left', shouldUseDarkTheme ? 'editor-panel-left--dark' : '']">
             <div :class="['editor-panel-titlebar', shouldUseDarkTheme ? 'editor-panel-titlebar--dark' : '']">
-              <span>💡 编辑答案</span>
+              <span>{{ $t('editor.editAnswer') }}</span>
               <span :class="['font-mono', shouldUseDarkTheme ? 'text-emerald-400' : 'text-emerald-500']">markdown</span>
             </div>
             <div :class="['editor-toolbar', shouldUseDarkTheme ? 'editor-toolbar--dark' : '']">
               <button @click="insertMarkdown('back', 'bold')" title="加粗" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Bold :size="15" /></button>
               <button @click="insertMarkdown('back', 'italic')" title="斜体" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Italic :size="15" /></button>
-              <button @click="insertMarkdown('back', 'strikethrough')" title="删除线" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Strikethrough :size="15" /></button>
+              <button @click="insertMarkdown('back', 'strikethrough')" :title="$t('editor.toolbar.strikethrough')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Strikethrough :size="15" /></button>
               <div :class="['editor-toolbar-sep', shouldUseDarkTheme ? 'editor-toolbar-sep--dark' : '']" />
-              <button @click="insertMarkdown('back', 'h1')" title="一级标题" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading1 :size="15" /></button>
-              <button @click="insertMarkdown('back', 'h2')" title="二级标题" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading2 :size="15" /></button>
-              <button @click="insertMarkdown('back', 'h3')" title="三级标题" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading3 :size="15" /></button>
+              <button @click="insertMarkdown('back', 'h1')" :title="$t('editor.toolbar.h1')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading1 :size="15" /></button>
+              <button @click="insertMarkdown('back', 'h2')" :title="$t('editor.toolbar.h2')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading2 :size="15" /></button>
+              <button @click="insertMarkdown('back', 'h3')" :title="$t('editor.toolbar.h3')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><Heading3 :size="15" /></button>
               <div :class="['editor-toolbar-sep', shouldUseDarkTheme ? 'editor-toolbar-sep--dark' : '']" />
-              <button @click="insertMarkdown('back', 'image')" title="插入图片" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ImageIcon :size="15" /></button>
+              <button @click="insertMarkdown('back', 'image')" :title="$t('editor.toolbar.image')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ImageIcon :size="15" /></button>
               <div :class="['editor-toolbar-sep', shouldUseDarkTheme ? 'editor-toolbar-sep--dark' : '']" />
-              <button @click="insertMarkdown('back', 'ul')" title="无序列表" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><List :size="15" /></button>
-              <button @click="insertMarkdown('back', 'ol')" title="有序列表" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ListOrdered :size="15" /></button>
+              <button @click="insertMarkdown('back', 'ul')" :title="$t('editor.toolbar.bulletList')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><List :size="15" /></button>
+              <button @click="insertMarkdown('back', 'ol')" :title="$t('editor.toolbar.orderedList')" :class="['editor-tool-btn', shouldUseDarkTheme ? 'editor-tool-btn--dark' : '']"><ListOrdered :size="15" /></button>
             </div>
             <div class="flex-1 p-5 flex gap-3 font-mono text-sm leading-relaxed overflow-hidden">
               <div :class="['text-right select-none pr-1 text-xs pt-0.5', shouldUseDarkTheme ? 'text-slate-600' : 'text-slate-400']">
@@ -167,10 +167,10 @@
 
           <div :class="['editor-panel-right', shouldUseDarkTheme ? 'editor-panel-right--dark' : '']">
             <div :class="['editor-panel-titlebar', shouldUseDarkTheme ? 'editor-panel-titlebar--dark' : '']">
-              <span class="flex items-center gap-1"><Eye :size="11" /> 实时预览</span>
+              <span class="flex items-center gap-1"><Eye :size="11" /> {{ $t('editor.preview') }}</span>
               <span :class="['font-medium flex items-center gap-1', shouldUseDarkTheme ? 'text-emerald-400' : 'text-emerald-500']">
                 <span :class="['w-1.5 h-1.5 rounded-full animate-pulse', shouldUseDarkTheme ? 'bg-emerald-400' : 'bg-emerald-500']" />
-                <span>渲染中</span>
+                <span>{{ $t('editor.rendering') }}</span>
               </span>
             </div>
             <div
@@ -183,14 +183,14 @@
 
         <footer :class="['editor-footer', shouldUseDarkTheme ? 'editor-footer--dark' : '']">
           <div class="flex items-center gap-4">
-            <span class="flex items-center gap-1"><FileText :size="14" /> 语法格式：Markdown</span>
+            <span class="flex items-center gap-1"><FileText :size="14" /> {{ $t('editor.markdownHelp') }}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span>快捷键：</span>
-            <kbd :class="['editor-kbd', shouldUseDarkTheme ? 'editor-kbd--dark' : '']">Ctrl + S</kbd> 保存
-            <kbd :class="['editor-kbd', shouldUseDarkTheme ? 'editor-kbd--dark' : '']">Esc</kbd> <span v-if="fullscreen">退出全屏</span><span v-else>收起</span>
+            <span>{{ $t('editor.shortcuts') }}</span>
+            <kbd :class="['editor-kbd', shouldUseDarkTheme ? 'editor-kbd--dark' : '']">Ctrl + S</kbd> {{ $t('editor.save') }}
+            <kbd :class="['editor-kbd', shouldUseDarkTheme ? 'editor-kbd--dark' : '']">Esc</kbd> <span v-if="fullscreen">{{ $t('editor.exitFullscreen') }}</span><span v-else>{{ $t('editor.collapse') }}</span>
             <kbd v-if="cardType !== 'article'" :class="['editor-kbd', shouldUseDarkTheme ? 'editor-kbd--dark' : '']">Tab</kbd>
-            <span v-if="cardType !== 'article'">切换面板</span>
+            <span v-if="cardType !== 'article'">{{ $t('editor.switchPanel') }}</span>
           </div>
         </footer>
 
@@ -205,6 +205,8 @@ import { ChevronLeft, ChevronDown, Tag, Link, Save, RotateCw, Maximize, Minimize
 import { Marked } from 'marked'
 import { useCardStore } from '../composables/useCardStore'
 import { useSettings } from '../composables/useSettings'
+import { useI18n } from '../locales/i18n'
+const { t } = useI18n()
 import { db } from '../db'
 
 const { settings } = useSettings()
@@ -234,9 +236,9 @@ const showCategoryDropdown = ref(false)
 const categoryDropdownRef = ref(null)
 
 const selectedCategoryLabel = computed(() => {
-  if (editCategoryId.value === null) return '未归类'
+  if (editCategoryId.value === null) return t('editor.unclassified')
   const cat = categories.value.find((c) => c.id === editCategoryId.value)
-  return cat ? cat.name : '未归类'
+  return cat ? cat.name : t('editor.unclassified')
 })
 
 const selectedCategoryId = computed(() => editCategoryId.value)
@@ -330,39 +332,39 @@ function insertMarkdown(targetPanel, type) {
 
   switch (type) {
     case 'bold':
-      insert = `**${selected || '粗体文本'}**`
+      insert = `**${selected || t('editor.placeholders.bold')}**`
       cursorOffset = selected ? insert.length : 2
       break
     case 'italic':
-      insert = `*${selected || '斜体文本'}*`
+      insert = `*${selected || t('editor.placeholders.italic')}*`
       cursorOffset = selected ? insert.length : 1
       break
     case 'strikethrough':
-      insert = `~~${selected || '删除线文本'}~~`
+      insert = `~~${selected || t('editor.placeholders.strikethrough')}~~`
       cursorOffset = selected ? insert.length : 2
       break
     case 'h1':
-      insert = `# ${selected || '一级标题'}`
+      insert = `# ${selected || t('editor.placeholders.h1')}`
       cursorOffset = selected ? insert.length : 2
       break
     case 'h2':
-      insert = `## ${selected || '二级标题'}`
+      insert = `## ${selected || t('editor.placeholders.h2')}`
       cursorOffset = selected ? insert.length : 3
       break
     case 'h3':
-      insert = `### ${selected || '三级标题'}`
+      insert = `### ${selected || t('editor.placeholders.h3')}`
       cursorOffset = selected ? insert.length : 4
       break
     case 'image':
-      insert = `![${selected || '图片描述'}](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=placeholder&image_size=landscape_16_9)`
+      insert = `![${selected || t('editor.placeholders.image')}](https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=placeholder&image_size=landscape_16_9)`
       cursorOffset = selected ? insert.length : 2
       break
     case 'ul':
-      insert = `- ${selected || '列表项'}`
+      insert = `- ${selected || t('editor.placeholders.listItem')}`
       cursorOffset = selected ? insert.length : 2
       break
     case 'ol':
-      insert = `1. ${selected || '列表项'}`
+      insert = `1. ${selected || t('editor.placeholders.listItem')}`
       cursorOffset = selected ? insert.length : 3
       break
   }

@@ -1,0 +1,18 @@
+export default {
+  cancel: '取消',
+  confirm: '确认',
+  save: '保存',
+  delete: '删除',
+  edit: '编辑',
+  close: '关闭',
+  minimize: '最小化',
+  maximize: '最大化',
+  restore: '还原',
+  open: '打开',
+  create: '创建',
+  search: '搜索',
+  loading: '加载中...',
+  none: '无',
+  unknown: '未分类',
+  maximizeRestore: '最大化/还原',
+}
