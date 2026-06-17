@@ -137,6 +137,11 @@ function handleContentClick(e) {
 const markedInstance = new Marked({ breaks: true, gfm: true })
 const card = computed(() => allCards.value.find((c) => c.id === props.cardId))
 
+// 卡片不存在时自动关闭窗口（避免"卡片不存在或已删除"滞留）
+watch(card, (val) => {
+  if (!val) emit('close')
+})
+
 // 扁平模式下的面层样式
 const flipFrontStyle = computed(() => {
   if (settings.value.flip3d) return {}

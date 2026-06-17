@@ -210,15 +210,11 @@ export async function seedDatabase(locale = 'zh-CN') {
     slugToId[cat.slug] = catIds[i]
   })
 
-  // 动态替换卡片 categoryId
-  const cardsWithRealIds = cards.map((card) => {
-    const slug = card._categorySlug
-    return {
-      ...card,
-      _categorySlug: undefined,
-      categoryId: slug ? slugToId[slug] : card.categoryId,
-    }
-  })
+  // 动态替换卡片 categoryId（清理 _categorySlug 避免 IndexedDB undefined 问题）
+  const cardsWithRealIds = cards.map(({ _categorySlug, ...card }) => ({
+    ...card,
+    categoryId: _categorySlug ? slugToId[_categorySlug] : card.categoryId,
+  }))
 
   await db.cards.bulkAdd(cardsWithRealIds)
   await db.apps.bulkAdd(apps)

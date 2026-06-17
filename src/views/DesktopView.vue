@@ -500,6 +500,12 @@ const currentDate = ref("");
 const showLauncher = ref(false);
 const showSetting = ref(false);
 async function handleDataChanged() {
+  // 先关闭所有卡片窗口（数据变更后 cardId 可能失效）
+  const cardWindowIds = openWindows.value
+    .filter((w) => w.type === 'card')
+    .map((w) => w.id)
+  cardWindowIds.forEach((id) => closeWindow(id))
+
   await Promise.all([
     loadApps(),
     loadAllCards(),
