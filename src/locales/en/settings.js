@@ -74,6 +74,7 @@ export default {
     themeSystem: 'Follow Desktop',
     themeLight: 'Light',
     themeDark: 'Dark',
+    themeSepia: 'Sepia',
     algorithm: 'Algorithm Parameters',
     initialInterval: 'Initial Interval',
     initialIntervalDesc: 'Days until first review after marking "Mastered"',

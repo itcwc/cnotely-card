@@ -39,4 +39,8 @@ export default {
     format: '{month}/{day} {weekday}',
   },
   resetProgressTooltip: 'Reset progress for all cards in current category',
+  themeTooltip: 'Cycle workspace theme (Light → Dark → Sepia)',
+  themeLight: 'Light',
+  themeDark: 'Dark',
+  themeSepia: 'Sepia',
 }

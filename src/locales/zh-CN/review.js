@@ -39,4 +39,8 @@ export default {
     format: '{month}月{day}日 {weekday}',
   },
   resetProgressTooltip: '重置当前分类所有卡片的学习进度',
+  themeTooltip: '点击切换工作台主题（亮色 → 深色 → 护眼）',
+  themeLight: '亮色',
+  themeDark: '深色',
+  themeSepia: '护眼',
 }

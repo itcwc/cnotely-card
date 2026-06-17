@@ -822,6 +822,7 @@ const reviewThemeOptions = computed(() => [
   { value: 'system', label: t('settings.review.themeSystem') },
   { value: 'light', label: t('settings.review.themeLight') },
   { value: 'dark', label: t('settings.review.themeDark') },
+  { value: 'sepia', label: t('settings.review.themeSepia') },
 ]);
 const { locale, setLocale, locales: localeList } = useI18n()
 const localeOptions = computed(() => [

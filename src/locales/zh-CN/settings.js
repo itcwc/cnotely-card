@@ -74,6 +74,7 @@ export default {
     themeSystem: '跟随桌面',
     themeLight: '浅色',
     themeDark: '深色',
+    themeSepia: '护眼',
     algorithm: '算法参数',
     initialInterval: '初始间隔',
     initialIntervalDesc: '首次标记「已掌握」后的复习天数',

@@ -17,6 +17,14 @@
         <button @click="showResetConfirm = true" class="text-xs review-reset-btn flex items-center gap-1">
           <RotateCcw :size="12" /> {{ $t('review.resetProgress') }}
         </button>
+        <button @click="cycleReviewTheme" class="text-xs review-theme-toggle flex items-center gap-1" :title="$t('review.themeTooltip')">
+          <!-- Sun icon for light -->
+          <Sun v-if="(settings.reviewTheme || 'system') === 'light' || ((settings.reviewTheme || 'system') === 'system' && settings.theme !== 'dark')" :size="13" />
+          <!-- Moon icon for dark -->
+          <Moon v-else-if="(settings.reviewTheme || 'system') === 'dark'" :size="13" />
+          <!-- Sepia icon -->
+          <Eye v-else :size="13" />
+        </button>
         <div class="flex items-center gap-1.5 text-[10px] review-kbd-hints">
           <kbd class="review-kbd">Space</kbd>{{ $t('review.shortcutHint') }}
           <kbd class="review-kbd">1</kbd>{{ $t('review.rateForgot') }}
@@ -290,7 +298,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Marked } from 'marked'
 import { useI18n } from '../locales/i18n'
-import { ArrowLeft, HelpCircle, Link, X, Check, PartyPopper, Zap, Lightbulb, Timer, RotateCcw, Play, Pause, PanelLeftClose, PanelLeftOpen, ChevronRight, Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal, Layers, AlertTriangle } from 'lucide-vue-next'
+import { ArrowLeft, HelpCircle, Link, X, Check, PartyPopper, Zap, Lightbulb, Timer, RotateCcw, Play, Pause, PanelLeftClose, PanelLeftOpen, ChevronRight, Globe, BookOpen, MessageSquare, Camera, Music, Code2, Pen, Mail, Search, MapPin, Calendar, Cloud, ShoppingCart, Video, Bookmark, Terminal, Layers, AlertTriangle, Sun, Moon, Eye } from 'lucide-vue-next'
 import { useCardStore } from '../composables/useCardStore'
 import { useSettings } from '../composables/useSettings'
 import { db } from '../db'
@@ -318,8 +326,20 @@ const reviewThemeClass = computed(() => {
   const rt = settings.value.reviewTheme || 'system'
   if (rt === 'light') return 'review-light'
   if (rt === 'dark') return 'review-dark'
+  if (rt === 'sepia') return 'review-sepia'
   return settings.value.theme === 'dark' ? 'review-dark' : 'review-light'
 })
+
+// 工作台内主题切换循环：light → dark → sepia → light
+const themeCycle = ['light', 'dark', 'sepia']
+function cycleReviewTheme() {
+  const current = settings.value.reviewTheme || 'system'
+  // system 视为 light
+  const effective = current === 'system' ? 'light' : current
+  const idx = themeCycle.indexOf(effective)
+  const next = themeCycle[(idx + 1) % themeCycle.length]
+  settings.value.reviewTheme = next
+}
 
 const deck = computed(() => reviewDeck.value.length > 0 ? reviewDeck.value : [])
 
@@ -675,8 +695,8 @@ onUnmounted(() => {
 
 /* ============ 浅色主题 ============ */
 .review-light {
-  --review-bg: #f1f5f9;
-  --review-bg-dot: #cbd5e1;
+  --review-bg: #dde4ed;
+  --review-bg-dot: #b0bec5;
   --review-menubar-bg: rgba(255, 255, 255, 0.55);
   --review-menubar-border: rgba(0, 0, 0, 0.08);
   --review-menubar-text: #334155;
@@ -714,7 +734,7 @@ onUnmounted(() => {
   --review-pomodoro-reset-hover-text: #64748b;
   --review-progress-track: #e2e8f0;
   --review-progress-idle: #cbd5e1;
-  --review-card-front-bg: #ffffff;
+  --review-card-front-bg: #fdf8f0;
   --review-card-front-border: rgba(0, 0, 0, 0.06);
   --review-card-front-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.05), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);
   --review-card-front-shadow-hover: 0 1px 3px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.06), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);
@@ -865,6 +885,102 @@ onUnmounted(() => {
   --review-kbd-text: rgba(255,255,255,0.45);
 }
 
+/* ============ 护眼模式 (Sepia) ============ */
+.review-sepia {
+  --review-bg: #f5f0e6;
+  --review-bg-dot: #d4c9b0;
+  --review-menubar-bg: rgba(245, 240, 230, 0.6);
+  --review-menubar-border: rgba(92, 74, 30, 0.1);
+  --review-menubar-text: #5c4a1e;
+  --review-menubar-muted: #8b7355;
+  --review-menubar-link: #8b7355;
+  --review-menubar-link-hover: #5c4a1e;
+  --review-sidebar-bg: rgba(245, 240, 230, 0.45);
+  --review-sidebar-border: rgba(92, 74, 30, 0.08);
+  --review-sidebar-hd-border: rgba(92, 74, 30, 0.08);
+  --review-sidebar-title: #8b7355;
+  --review-sidebar-toggle: #8b7355;
+  --review-sidebar-toggle-hover-bg: rgba(92, 74, 30, 0.08);
+  --review-sidebar-toggle-hover-text: #5c4a1e;
+  --review-sidebar-mini-bg: #b8a882;
+  --review-deck-bg: rgba(255, 255, 253, 0.5);
+  --review-deck-border: rgba(92, 74, 30, 0.06);
+  --review-deck-hover-bg: rgba(255, 255, 253, 0.8);
+  --review-deck-active-bg: rgba(184, 134, 11, 0.1);
+  --review-deck-active-border: rgba(184, 134, 11, 0.25);
+  --review-deck-name: #5c4a1e;
+  --review-deck-meta: #8b7355;
+  --review-deck-arrow: #c4b99a;
+  --review-pomodoro-section-border: rgba(92, 74, 30, 0.06);
+  --review-pomodoro-card-bg: rgba(255, 255, 253, 0.5);
+  --review-pomodoro-card-border: rgba(92, 74, 30, 0.06);
+  --review-pomodoro-hd: #8b7355;
+  --review-pomodoro-stats: #8b7355;
+  --review-pomodoro-time: #5c4a1e;
+  --review-pomodoro-start-bg: #b8860b;
+  --review-pomodoro-start-text: #fff;
+  --review-pomodoro-start-hover: #9a7209;
+  --review-pomodoro-reset-bg: rgba(245, 240, 230, 0.5);
+  --review-pomodoro-reset-text: #8b7355;
+  --review-pomodoro-reset-hover-bg: rgba(245, 240, 230, 0.7);
+  --review-pomodoro-reset-hover-text: #5c4a1e;
+  --review-progress-track: rgba(92, 74, 30, 0.1);
+  --review-progress-idle: #c4b99a;
+  --review-card-front-bg: #fefcf5;
+  --review-card-front-border: rgba(92, 74, 30, 0.08);
+  --review-card-front-shadow: 0 1px 3px rgba(92, 74, 30, 0.06), 0 8px 24px rgba(92, 74, 30, 0.08), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(92, 74, 30, 0.04);
+  --review-card-front-shadow-hover: 0 1px 3px rgba(92, 74, 30, 0.08), 0 12px 32px rgba(92, 74, 30, 0.1), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(92, 74, 30, 0.06);
+  --review-card-meta: #8b7355;
+  --review-card-back-bg: #3e3224;
+  --review-card-back-border: rgba(255, 255, 255, 0.06);
+  --review-card-back-shadow: 0 1px 3px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.2);
+  --review-card-back-meta: #a8926e;
+  --review-flip-hint: #8b7355;
+  --review-card-shadow-bg: rgba(255, 255, 253, 0.4);
+  --review-card-shadow-border: rgba(92, 74, 30, 0.04);
+  --review-card-shadow-ghost-bg: rgba(255, 255, 253, 0.2);
+  --review-rate-forget-bg: rgba(255, 255, 253, 0.5);
+  --review-rate-forget-border: rgba(220, 38, 38, 0.15);
+  --review-rate-forget-hover-bg: rgba(220, 38, 38, 0.06);
+  --review-rate-forget-hover-border: rgba(220, 38, 38, 0.3);
+  --review-rate-master-bg: rgba(255, 255, 253, 0.5);
+  --review-rate-master-border: rgba(16, 185, 129, 0.15);
+  --review-rate-master-hover-bg: rgba(16, 185, 129, 0.06);
+  --review-rate-master-hover-border: rgba(16, 185, 129, 0.3);
+  --review-rate-label: #8b7355;
+  --review-complete-bg: rgba(255, 255, 253, 0.4);
+  --review-complete-border: rgba(92, 74, 30, 0.06);
+  --review-complete-icon-bg: rgba(16, 185, 129, 0.1);
+  --review-complete-icon-text: #10b981;
+  --review-complete-title: #5c4a1e;
+  --review-complete-desc: #8b7355;
+  --review-dialog-bg: rgba(255, 253, 248, 0.95);
+  --review-dialog-title: #5c4a1e;
+  --review-dialog-desc: #8b7355;
+  --review-dialog-body: #5c4a1e;
+  --review-dialog-cancel-bg: #f5f0e6;
+  --review-dialog-cancel-text: #8b7355;
+  --review-dialog-cancel-hover: #ebe5d9;
+  --review-prose-heading: #5c4a1e;
+  --review-prose-text: #5c4a1e;
+  --review-prose-code-bg: #ebe5d9;
+  --review-prose-code-text: #b8860b;
+  --review-prose-pre-bg: #3e3224;
+  --review-prose-pre-text: #e2d5c0;
+  --review-prose-strong: #5c4a1e;
+  --review-prose-blockquote-border: #b8860b;
+  --review-prose-blockquote-bg: #ebe5d9;
+  --review-prose-blockquote-text: #8b7355;
+  --review-prose-answer-heading: #e2d5c0;
+  --review-prose-answer-text: #a8926e;
+  --review-reset-btn: #8b7355;
+  --review-reset-btn-hover: #dc2626;
+  --review-kbd-hints: #c4b99a;
+  --review-kbd-bg: rgba(92, 74, 30, 0.06);
+  --review-kbd-border: rgba(92, 74, 30, 0.08);
+  --review-kbd-text: #8b7355;
+}
+
 /* ============ 背景（网点纹理） ============ */
 .review-page {
   background-color: var(--review-bg);
@@ -895,6 +1011,20 @@ onUnmounted(() => {
   transition: color var(--review-transition);
 }
 .review-reset-btn:hover { color: var(--review-reset-btn-hover); }
+
+.review-theme-toggle {
+  color: var(--review-menubar-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all var(--review-transition);
+}
+.review-theme-toggle:hover {
+  color: var(--review-menubar-text);
+  background: var(--review-sidebar-toggle-hover-bg);
+}
 
 .review-kbd-hints { color: var(--review-kbd-hints); }
 .review-kbd {
