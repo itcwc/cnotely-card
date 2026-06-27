@@ -7,7 +7,18 @@ export default {
     review: '复习',
     pomodoro: '番茄钟',
     data: '数据',
+    language: '语言',
     about: '关于',
+  },
+  language: {
+    title: '语言',
+    desc: '切换界面显示语言',
+    label: '界面语言',
+    languageDesc: '选择你偏好的显示语言',
+    chinese: '中文',
+    english: 'English',
+    hint: '语言切换即时生效',
+    resetHint: '如需切换语言后替换默认数据，可前往「数据」→「重置为出厂设置」',
   },
   appearance: {
     title: '外观',

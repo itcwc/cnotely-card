@@ -93,7 +93,7 @@ import enSeed from '../locales/en/seed.js'
 const seedLocales = { 'zh-CN': zhCNSeed, en: enSeed }
 
 function getSeedData(locale) {
-  const l = seedLocales[locale] || seedLocales['zh-CN']
+  const l = seedLocales[locale] || seedLocales['en']
   const now = Date.now()
 
   const categories = [
@@ -195,7 +195,7 @@ const philosophy = {
   return { categories, cards, apps }
 }
 
-export async function seedDatabase(locale = 'zh-CN') {
+export async function seedDatabase(locale = 'en') {
   const count = await db.categories.count()
   if (count > 0) return
 

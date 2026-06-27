@@ -734,7 +734,7 @@ onUnmounted(() => {
   --review-pomodoro-reset-hover-text: #64748b;
   --review-progress-track: #e2e8f0;
   --review-progress-idle: #cbd5e1;
-  --review-card-front-bg: #fdf8f0;
+  --review-card-front-bg: #ffffff;
   --review-card-front-border: rgba(0, 0, 0, 0.06);
   --review-card-front-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.05), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);
   --review-card-front-shadow-hover: 0 1px 3px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08), 0 2px 0 -1px #fff, 0 4px 4px -2px rgba(0,0,0,0.06), 0 8px 0 -4px #f8fafc, 0 10px 6px -4px rgba(0,0,0,0.04);

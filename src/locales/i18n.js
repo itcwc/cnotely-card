@@ -5,8 +5,8 @@ import en from './en/index.js'
 const locales = { 'zh-CN': zhCN, en }
 const localeOrder = ['zh-CN', 'en']
 
-const currentLocale = ref('zh-CN')
-const messages = ref(locales['zh-CN'])
+const currentLocale = ref('en')
+const messages = ref(locales['en'])
 
 function setLocale(lang) {
   if (locales[lang]) {
@@ -18,16 +18,14 @@ function setLocale(lang) {
   }
 }
 
-// 启动时恢复：localStorage → 浏览器语言 → 默认 zh-CN
+// 启动时恢复：localStorage → 默认 en
+// 首次访问不做浏览器语言检测，统一默认英文
 try {
   const saved = localStorage.getItem('cnotely-locale')
   if (saved && locales[saved]) {
     setLocale(saved)
-  } else {
-    // 首次访问，检测浏览器语言
-    const lang = (navigator.language || '').toLowerCase()
-    setLocale(lang.startsWith('zh') ? 'zh-CN' : 'en')
   }
+  // 无 saved 时保持初始默认值 'en'，不自动检测浏览器语言
 } catch {}
 
 // 模板中使用：$t('key.subkey')

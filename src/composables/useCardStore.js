@@ -2,6 +2,9 @@ import { ref, computed } from 'vue'
 import { db } from '../db'
 import { nextZIndex } from './useZIndex'
 import { useSettings } from './useSettings'
+import { useI18n } from '../locales/i18n.js'
+
+const { t } = useI18n()
 
 const apps = ref([])
 const categories = ref([])
@@ -26,7 +29,7 @@ async function loadAllCards() {
         id: String(card.id),
         categoryId: card.categoryId,
         type: card.type || 'qa',
-        tag: cat.tag || '#未分类',
+        tag: cat.tag || t('seed.tags.uncategorized'),
         border: hexToBorder[cat.iconColor] || cat.border || 'border-t-slate-400',
         iconColor: cat.iconColor || null,
         q: card.question,
@@ -175,7 +178,7 @@ function openCardWindow(cardId) {
     id: `card-${cardId}`,
     type: 'card',
     cardId: cardId,
-    title: card.type === 'article' ? '📄 文章卡' : '🃏 记忆卡',
+    title: card.type === 'article' ? `📄 ${t('desktop.cardTypes.article')}` : `🃏 ${t('desktop.cardTypes.memory')}`,
     x: card.windowX || 100 + (openWindows.value.length * 30),
     y: card.windowY || 100 + (openWindows.value.length * 30),
     width: card.windowWidth || (card.type === 'article' ? (layoutSettings.value.articleWidth ?? 350) : (layoutSettings.value.cardWidth ?? 310)),
@@ -299,7 +302,7 @@ async function ensureReviewIcon() {
     return
   }
   const id = await db.apps.add({
-    name: '复习工作台',
+    name: t('desktop.reviewWorkbench'),
     icon: 'lucide:RotateCwSquare',
     url: '/review',
     color: '#1e293b',

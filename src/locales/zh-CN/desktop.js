@@ -20,6 +20,7 @@ export default {
     article: '文章卡',
     memory: '记忆卡',
   },
+  reviewWorkbench: '复习工作台',
   dockMenu: {
     open: '打开',
     edit: '编辑',

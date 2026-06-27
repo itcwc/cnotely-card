@@ -654,14 +654,18 @@
           </div>
         </template>
 
-        <!-- ====== 关于 ====== -->
-        <template v-if="activeTab === 'about'">
-          <div class="panel-header"><h2>{{ $t('settings.about.title') }}</h2></div>
-          <div class="setting-group-title">{{ $t('settings.about.language') }}</div>
+        <!-- ====== 语言 ====== -->
+        <template v-if="activeTab === 'language'">
+          <div class="panel-header">
+            <h2>{{ $t('settings.language.title') }}</h2>
+            <p>{{ $t('settings.language.desc') }}</p>
+          </div>
+
+          <div class="setting-group-title">{{ $t('settings.language.label') }}</div>
           <div class="setting-row">
             <div>
-              <p class="setting-label">{{ $t('settings.about.languageLabel') }}</p>
-              <p class="setting-desc">{{ $t('settings.about.languageDesc') }}</p>
+              <p class="setting-label">{{ $t('settings.language.label') }}</p>
+              <p class="setting-desc">{{ $t('settings.language.languageDesc') }}</p>
             </div>
             <div class="segmented-control">
               <button
@@ -672,6 +676,16 @@
               >{{ l.label }}</button>
             </div>
           </div>
+
+          <div class="language-hint-row">
+            <p class="text-xs text-slate-400">{{ $t('settings.language.hint') }}</p>
+            <p class="text-xs text-red-400 mt-1">{{ $t('settings.language.resetHint') }}</p>
+          </div>
+        </template>
+
+        <!-- ====== 关于 ====== -->
+        <template v-if="activeTab === 'about'">
+          <div class="panel-header"><h2>{{ $t('settings.about.title') }}</h2></div>
           <div class="flex flex-col items-center py-12">
             <div
               class="w-24 h-24 bg-gradient-to-br from-blue-400 to-purple-500 rounded-3xl flex items-center justify-center text-white text-4xl font-bold shadow-xl shadow-blue-500/25 mb-6"
@@ -734,6 +748,7 @@ import {
   BrainCircuit,
   Timer,
   Database,
+  Globe,
   Info,
   ChevronRight,
   Maximize,
@@ -778,6 +793,7 @@ const tabs = computed(() => [
   { id: "review", label: t('settings.tabs.review'), icon: BrainCircuit },
   { id: "pomodoro", label: t('settings.tabs.pomodoro'), icon: Timer },
   { id: "data", label: t('settings.tabs.data'), icon: Database },
+  { id: "language", label: t('settings.tabs.language'), icon: Globe },
   { id: "about", label: t('settings.tabs.about'), icon: Info },
 ]);
 
@@ -826,8 +842,8 @@ const reviewThemeOptions = computed(() => [
 ]);
 const { locale, setLocale, locales: localeList } = useI18n()
 const localeOptions = computed(() => [
-  { value: 'zh-CN', label: t('settings.about.chinese') },
-  { value: 'en', label: t('settings.about.english') },
+  { value: 'zh-CN', label: t('settings.language.chinese') },
+  { value: 'en', label: t('settings.language.english') },
 ])
 const initialInterval = ref(1);
 const easeFactor = ref(2.5);
@@ -908,7 +924,7 @@ async function loadSettings() {
   showEbbinghaus.value = s.showEbbinghaus ?? true
   shuffleCards.value = s.shuffleCards ?? false
   reviewTheme.value = s.reviewTheme ?? 'system'
-  locale.value = s.locale ?? 'zh-CN'
+  locale.value = s.locale ?? 'en'
   setLocale(locale.value)
 
   focusDuration.value = String(s.focusDuration || 25)
@@ -1481,6 +1497,10 @@ onMounted(async () => {
 .confirm-dialog::backdrop {
   background: var(--dialog-backdrop);
   backdrop-filter: blur(4px);
+}
+
+.language-hint-row {
+  padding: 12px 20px;
 }
 .confirm-dialog {
   position: fixed;

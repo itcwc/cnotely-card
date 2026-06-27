@@ -7,7 +7,18 @@ export default {
     review: 'Review',
     pomodoro: 'Pomodoro',
     data: 'Data',
+    language: 'Language',
     about: 'About',
+  },
+  language: {
+    title: 'Language',
+    desc: 'Switch interface display language',
+    label: 'Interface Language',
+    languageDesc: 'Choose your preferred display language',
+    chinese: '中文',
+    english: 'English',
+    hint: 'Language switch takes effect immediately',
+    resetHint: 'To replace default data after switching language, go to Data → Reset to Factory Settings',
   },
   appearance: {
     title: 'Appearance',

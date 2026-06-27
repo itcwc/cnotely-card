@@ -30,7 +30,7 @@ const defaults = {
 
   // 复习
   reviewTheme: 'system',
-  locale: 'zh-CN',
+  locale: 'en',
   initialInterval: 1,
   easeFactor: 2.5,
   minIntervalMult: 1.3,
@@ -208,9 +208,9 @@ async function clearAllCards() {
 
 async function resetToFactory() {
   // 保存当前语言设置，重置后恢复
-  let currentLocale = 'zh-CN'
+  let currentLocale = 'en'
   try {
-    currentLocale = localStorage.getItem('cnotely-locale') || 'zh-CN'
+    currentLocale = localStorage.getItem('cnotely-locale') || 'en'
   } catch {}
 
   await db.cards.clear()

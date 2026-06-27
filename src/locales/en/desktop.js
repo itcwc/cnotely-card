@@ -20,6 +20,7 @@ export default {
     article: 'Article Card',
     memory: 'Memory Card',
   },
+  reviewWorkbench: 'Review Workbench',
   dockMenu: {
     open: 'Open',
     edit: 'Edit',
