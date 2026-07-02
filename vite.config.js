@@ -7,4 +7,5 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
+  base: './',  // 相对路径，适配 Chrome 扩展的嵌套目录
 })

@@ -15,7 +15,7 @@ const defaults = {
 
   // 桌面
   layoutMode: 'auto',
-  iconGap: 90,
+  iconGap: 100,
   showIconLabels: true,
   trashDirectDelete: false,
 
@@ -58,6 +58,7 @@ function coerceValue(key, val) {
 
 let _loaded = false
 let _loading = null
+let watchCleanup = null
 
 const settings = ref({ ...defaults })
 
@@ -80,35 +81,47 @@ function setBulk(obj) {
 
 async function persist() {
   try {
-    await db.settings.put({ key: SETTINGS_KEY, value: { ...settings.value } })
-  } catch {
-    // 静默
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings.value }))
+  } catch (e) {
+    console.error('[useSettings persist] ERROR:', e)
   }
 }
-
-let watchCleanup = null
 
 async function init() {
   if (_loaded) return
   if (_loading) return _loading
   _loading = (async () => {
     try {
-      const row = await db.settings.get(SETTINGS_KEY)
-      if (row && row.value) {
-        for (const [k, v] of Object.entries(row.value)) {
-          settings.value[k] = coerceValue(k, v)
+      const raw = localStorage.getItem(SETTINGS_KEY)
+      if (raw) {
+        const row = JSON.parse(raw)
+        // 兼容旧格式 { value: {...} } 和新格式 flat {...}
+        const values = row?.value ?? row
+        if (values && typeof values === 'object') {
+          for (const [k, v] of Object.entries(values)) {
+            settings.value[k] = coerceValue(k, v)
+          }
         }
       }
-    } catch {
-      // 表可能还不存在
+    } catch (e) {
+      console.error('[useSettings init] parse error:', e)
     }
+    // locale 以 localStorage 为准（i18n.js 也存这里），修复默认值变更后老数据缺失导致切回英文
+    try {
+      const savedLocale = localStorage.getItem('cnotely-locale')
+      if (savedLocale) {
+        settings.value.locale = savedLocale
+      }
+    } catch {}
     _loaded = true
     _loading = null
+    console.log('[useSettings init] layoutMode after load:', settings.value.layoutMode)
 
     if (!watchCleanup) {
       watchCleanup = watch(
         () => ({ ...settings.value }),
-        () => persist(),
+        (nv) => { console.log('[useSettings watch] changed, layoutMode:', nv.layoutMode); persist() },
+
         { deep: true, flush: 'post' }
       )
     }
@@ -161,7 +174,7 @@ async function exportAllData() {
     db.categories.toArray(),
     db.cards.toArray(),
     db.apps.toArray(),
-    db.settings.toArray(),
+    settingsTable.toArray(),
   ])
   return {
     version: 1,
@@ -180,7 +193,7 @@ async function importAllData(data) {
   await db.categories.clear()
   await db.cards.clear()
   await db.apps.clear()
-  await db.settings.clear()
+  await settingsTable.clear()
 
   if (data.categories.length) {
     await db.categories.bulkAdd(data.categories)
@@ -193,7 +206,7 @@ async function importAllData(data) {
   }
   if (data.settings && data.settings.length) {
     for (const s of data.settings) {
-      await db.settings.put(s)
+      await settingsTable.put(s)
     }
   }
   _loaded = false
@@ -215,7 +228,7 @@ async function resetToFactory() {
 
   await db.cards.clear()
   await db.apps.clear()
-  await db.settings.clear()
+  await settingsTable.clear()
   await db.categories.clear()
   _loaded = false
   _loading = null
@@ -233,7 +246,7 @@ async function getStorageStats() {
     db.cards.count(),
     db.apps.count(),
     db.categories.count(),
-    db.settings.toArray(),
+    settingsTable.toArray(),
   ])
 
   let pomodoroStats = { todayCount: 0, totalCount: 0, totalMinutes: 0 }

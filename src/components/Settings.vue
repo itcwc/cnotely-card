@@ -897,6 +897,7 @@ function formatSize(bytes) {
 async function loadSettings() {
   await init()
   const s = get()
+  console.log('[loadSettings] s.layoutMode:', s.layoutMode)
 
   selectedWallpaper.value = s.wallpaperIndex ?? 0
   blurStrength.value = s.blurStrength ?? 25
@@ -906,7 +907,7 @@ async function loadSettings() {
   globalTheme.value = s.theme ?? 'light'
 
   layoutMode.value = s.layoutMode || 'auto'
-  iconGap.value = s.iconGap ?? 90
+  iconGap.value = s.iconGap ?? 100
   showIconLabels.value = s.showIconLabels ?? true
   trashDirectDelete.value = s.trashDirectDelete ?? false
   defaultCardType.value = s.defaultCardType || 'qa'
@@ -949,13 +950,20 @@ function saveSetting(key, value) {
   // persist 由 useSettings 的 deep watch 自动触发
 }
 
+// 扩展环境：主题变更同步到 chrome.storage（与 note-plugin 共享）
+function syncSharedTheme(v) {
+  if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.set({ 'cnote:theme': v })
+  }
+}
+
 // watch 所有 ref，变更时持久化
 watch(selectedWallpaper, (v) => saveSetting('wallpaperIndex', v))
 watch(blurStrength, (v) => saveSetting('blurStrength', v))
 watch(barOpacity, (v) => saveSetting('barOpacity', v))
 watch(reduceMotion, (v) => saveSetting('reduceMotion', v))
 watch(dockZoom, (v) => saveSetting('dockZoom', v))
-watch(globalTheme, (v) => saveSetting('theme', v))
+watch(globalTheme, (v) => { saveSetting('theme', v); syncSharedTheme(v) })
 
 watch(layoutMode, (v) => saveSetting('layoutMode', v))
 watch(iconGap, (v) => saveSetting('iconGap', v))

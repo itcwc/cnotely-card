@@ -17,7 +17,7 @@
         <img v-else :src="app.icon" :alt="app.name" draggable="false" class="w-9 h-9 object-contain pointer-events-none" />
       </div>
     </div>
-    <span v-show="showLabel" class="icon-label text-[11px] font-medium truncate w-full text-center drop-shadow-md px-1">
+    <span v-show="showLabel" class="icon-label text-[11px] font-medium w-full text-center drop-shadow-md px-1">
       {{ app.name }}
     </span>
   </div>
@@ -56,7 +56,7 @@ const props = defineProps({
   },
   gridSize: {
     type: Number,
-    default: 90,
+    default: 100,
   },
   showLabel: {
     type: Boolean,
@@ -75,6 +75,7 @@ const initialPos = ref({ x: 0, y: 0 })
 const mouseOffset = ref({ x: 0, y: 0 })
 
 const GRID_SIZE = computed(() => props.gridSize)
+const FREE_GRID = computed(() => props.gridSize)  // 自由模式也对齐网格，不可叠加
 const ICON_WIDTH = 76
 const ICON_HEIGHT = 90
 const MOVE_THRESHOLD = 5
@@ -111,8 +112,8 @@ const positionStyle = computed(() => {
   if (props.layoutMode === 'free') {
     return {
       position: 'absolute',
-      left: `${props.gridX * GRID_SIZE.value}px`,
-      top: `${props.gridY * GRID_SIZE.value}px`,
+      left: `${props.gridX * FREE_GRID.value}px`,
+      top: `${props.gridY * FREE_GRID.value}px`,
     }
   }
   return {}
@@ -201,19 +202,15 @@ function startDrag(e) {
     } catch (_) {}
 
     if (hasMoved.value && isFreeMode) {
-      // 自由模式：currentPos 是视口坐标，需转为容器相对坐标来算 gridX/gridY
-      const container = iconRef.value?.offsetParent
+      // 自由模式：currentPos 是视口坐标，用 parentElement 获取容器 rect
+      // 存储 gridX/gridY 索引（不是像素），渲染时 left/top = gridX * gridSize
+      const container = iconRef.value?.parentElement
       const containerRect = container?.getBoundingClientRect()
       if (containerRect) {
         const relX = currentPos.value.x - containerRect.left
         const relY = currentPos.value.y - containerRect.top
-        const gridX = Math.max(0, Math.round(relX / GRID_SIZE.value))
-        const gridY = Math.max(0, Math.round(relY / GRID_SIZE.value))
-        emit('drag-end', props.app.id, gridX, gridY)
-      } else {
-        // fallback：直接用 currentPos（此时是视口坐标，不准确但不应发生）
-        const gridX = Math.max(0, Math.round(currentPos.value.x / GRID_SIZE.value))
-        const gridY = Math.max(0, Math.round(currentPos.value.y / GRID_SIZE.value))
+        const gridX = Math.max(0, Math.round(relX / FREE_GRID.value))
+        const gridY = Math.max(0, Math.round(relY / FREE_GRID.value))
         emit('drag-end', props.app.id, gridX, gridY)
       }
     } else if (hasMoved.value && !isFreeMode) {
@@ -281,6 +278,11 @@ function startDrag(e) {
   color: var(--wb-icon-label);
   text-shadow: var(--wb-icon-label-shadow, 0 1px 2px rgba(0, 0, 0, 0.5));
   line-height: 1.4;
-  max-height: 28px;
+  max-height: 56px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
 </style>

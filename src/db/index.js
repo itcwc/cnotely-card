@@ -186,6 +186,7 @@ const philosophy = {
 
   const apps = [
     { name: isZh ? '复习工作台' : 'Review Workbench', icon: 'lucide:RotateCwSquare', url: '/review', color: '#1e293b', gridX: 0, gridY: 0, pinned: true, createdAt: now },
+    { name: 'Cnotely Note', icon: '/icon.png', url: 'https://app.cnotely.com/', color: '#ffffff', gridX: 2, gridY: 1, createdAt: now },
     { name: 'GitHub', icon: 'https://github.githubassets.com/favicons/favicon.svg', url: 'https://github.com', color: '#ffffff', gridX: 1, gridY: 0, createdAt: now },
     { name: 'Google', icon: 'https://www.google.com/images/branding/product/ico/googleg_lodp.ico', url: 'https://google.com', color: '#ffffff', gridX: 2, gridY: 0, createdAt: now },
     { name: 'YouTube', icon: 'https://www.youtube.com/s/desktop/12d6b690/img/favicon_144x144.png', url: 'https://youtube.com', color: '#ffffff', gridX: 0, gridY: 1, createdAt: now },

@@ -1,5 +1,6 @@
 import { ref, computed, onUnmounted, watch } from 'vue'
 import { db } from '../db'
+import { settingsTable } from '../storage/adapter'
 import { useSettings } from './useSettings'
 
 const STATS_KEY = 'pomodoroStats'
@@ -32,13 +33,13 @@ function getTodayStr() {
 
 async function loadStats() {
   try {
-    const row = await db.settings.get(STATS_KEY)
+    const row = await settingsTable.get(STATS_KEY)
     if (row) {
       const stats = row.value
       if (stats.todayDate !== getTodayStr()) {
         stats.todayCount = 0
         stats.todayDate = getTodayStr()
-        await db.settings.put({ key: STATS_KEY, value: stats })
+        await settingsTable.put({ key: STATS_KEY, value: stats })
       }
       todayCount.value = stats.todayCount || 0
       totalCount.value = stats.totalCount || 0
@@ -64,7 +65,7 @@ async function saveStats() {
     lastCompletedAt: Date.now(),
   }
   try {
-    await db.settings.put({ key: STATS_KEY, value: stats })
+    await settingsTable.put({ key: STATS_KEY, value: stats })
   } catch {
     // 静默失败
   }

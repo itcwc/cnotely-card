@@ -36,8 +36,8 @@
     </header>
 
     <main class="absolute top-7 left-0 right-0 bottom-0 pt-2 px-3">
-      <div v-if="desktopLayoutMode === 'auto'"
-        class="flex flex-col flex-wrap content-start h-full" :style="autoFlexGap" ref="autoGridRef">
+  <div v-if="desktopLayoutMode === 'auto'"
+    class="flex flex-col flex-wrap content-start h-full" :style="autoFlexGap" ref="autoGridRef">
         <DesktopIcon v-for="(app, index) in apps" :key="app.id" :app="app" :is-selected="selectedIconId === app.id"
           :layout-mode="desktopLayoutMode" :grid-size="desktopIconGap" :show-label="showIconLabels" :class="{
             'icon-drop-target':
@@ -528,7 +528,7 @@ const barOpacity = computed(() => wallpaperSettings.value.barOpacity ?? 50)
 const reduceMotion = computed(() => wallpaperSettings.value.reduceMotion ?? false)
 const dockZoomEnabled = computed(() => wallpaperSettings.value.dockZoom ?? true)
 const showIconLabels = computed(() => wallpaperSettings.value.showIconLabels ?? true)
-const desktopIconGap = computed(() => wallpaperSettings.value.iconGap ?? 90)
+const desktopIconGap = computed(() => wallpaperSettings.value.iconGap ?? 100)
 const trashDirectDelete = computed(() => wallpaperSettings.value.trashDirectDelete ?? false)
 const autoFlexGap = computed(() => ({
   gap: `${Math.round(desktopIconGap.value * 0.2)}px`,
@@ -886,8 +886,6 @@ function handleIconDragMove(appId, gridX, gridY) {
 }
 
 async function handleIconDragEnd(appId, gridX, gridY) {
-  previewPositions.value = {};
-
   if (isDraggingOverTrash.value) {
     const app = apps.value.find((a) => a.id === appId);
     if (!app?.pinned) {
@@ -900,6 +898,7 @@ async function handleIconDragEnd(appId, gridX, gridY) {
     isDraggingOverTrash.value = false;
     draggingType.value = null;
     draggingId.value = null;
+    previewPositions.value = {};
     return;
   }
   isDraggingOverTrash.value = false;
@@ -921,9 +920,21 @@ async function handleIconDragEnd(appId, gridX, gridY) {
         );
       }
     }
+  } else {
+    // auto 模式：拖到已有图标位置 → 两者交换位置（挤掉效果）
+    const occupyingApp = apps.value.find(
+      (a) => a.id !== appId && a.gridX === gridX && a.gridY === gridY,
+    );
+    if (occupyingApp) {
+      const draggedApp = apps.value.find((a) => a.id === appId);
+      if (draggedApp) {
+        await updateAppPosition(occupyingApp.id, draggedApp.gridX, draggedApp.gridY);
+      }
+    }
   }
 
   await updateAppPosition(appId, gridX, gridY);
+  previewPositions.value = {};
 }
 
 function handleIconContextMenu(app, e) {

@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import zhCN from './zh-CN/index.js'
 import en from './en/index.js'
 
@@ -8,6 +8,9 @@ const localeOrder = ['zh-CN', 'en']
 const currentLocale = ref('en')
 const messages = ref(locales['en'])
 
+// 检测是否在 Chrome 扩展环境
+const inExtension = typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local
+
 function setLocale(lang) {
   if (locales[lang]) {
     currentLocale.value = lang
@@ -15,17 +18,34 @@ function setLocale(lang) {
     try {
       localStorage.setItem('cnotely-locale', lang)
     } catch {}
+    // 扩展环境：同步语言到 chrome.storage（note-plugin 用 selectedLanguage 键）
+    if (inExtension) {
+      const extLang = lang === 'zh-CN' ? 'zh' : lang
+      chrome.storage.local.set({ selectedLanguage: extLang })
+    }
   }
 }
 
-// 启动时恢复：localStorage → 默认 en
-// 首次访问不做浏览器语言检测，统一默认英文
+// 启动时恢复语言
 try {
-  const saved = localStorage.getItem('cnotely-locale')
-  if (saved && locales[saved]) {
-    setLocale(saved)
+  // 扩展环境优先从 chrome.storage 读取（与 note-plugin 共享）
+  if (inExtension) {
+    chrome.storage.local.get('selectedLanguage').then((res) => {
+      if (res.selectedLanguage) {
+        // 映射 note-plugin 的值格式
+        const mapped = res.selectedLanguage === 'zh' ? 'zh-CN' : res.selectedLanguage
+        if (locales[mapped]) setLocale(mapped)
+        return
+      }
+      // fallback to localStorage
+      const saved = localStorage.getItem('cnotely-locale')
+      if (saved && locales[saved]) setLocale(saved)
+    })
+  } else {
+    const saved = localStorage.getItem('cnotely-locale')
+    if (saved && locales[saved]) setLocale(saved)
   }
-  // 无 saved 时保持初始默认值 'en'，不自动检测浏览器语言
+  // 无 saved 时保持初始默认值 'en'
 } catch {}
 
 // 模板中使用：$t('key.subkey')
