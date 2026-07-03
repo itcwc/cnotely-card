@@ -3,6 +3,7 @@ import { db } from '../db'
 import { nextZIndex } from './useZIndex'
 import { useSettings } from './useSettings'
 import { useI18n } from '../locales/i18n.js'
+import { track } from '../utils/analytics-sdk.js'
 
 const { t } = useI18n()
 
@@ -262,6 +263,7 @@ async function createCard(cardData) {
     isOpen: false,
   })
   await loadAllCards()
+  track('card_created', { type: cardData.type || 'qa' })
   return String(id)
 }
 
@@ -290,6 +292,16 @@ async function initDesktop() {
   await loadAllCards()
   await loadApps()
   await ensureReviewIcon()
+  // 上报卡片总数（排除种子数据）
+  try {
+    const userCards = await db.cards.where('isSeed').notEqual(1).count()
+    const totalCards = await db.cards.count()
+    track('cards_total', { count: userCards, total: totalCards })
+  } catch {
+    // isSeed 字段可能不存在（旧数据），降级为全量计数
+    const totalCards = await db.cards.count()
+    track('cards_total', { count: Math.max(0, totalCards - 8), total: totalCards })
+  }
 }
 
 async function ensureReviewIcon() {

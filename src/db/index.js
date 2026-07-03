@@ -106,15 +106,16 @@ function getSeedData(locale) {
   const isZh = locale === 'zh-CN'
 
   const cards = [
-    { _categorySlug: 'frontend', question: isZh ? '如何在 CSS 中利用多层 box-shadow 完美优雅地模拟出卡片层叠堆起的物理厚度？' : 'How to elegantly simulate card stack physical thickness using CSS multi-layer box-shadow?', answer: isZh ? '使用逗号分隔多组阴影偏移量即可。' : 'Use comma-separated multiple shadow offsets.', source: 'https://developer.mozilla.org', createdAt: now, sortOrder: 100 },
-    { _categorySlug: 'frontend', question: isZh ? 'Tailwind CSS 的 perspective 属性如何开启 3D 空间？' : 'How does Tailwind CSS perspective property enable 3D space?', answer: isZh ? '外层包裹 perspective-1000，内层开启 transform-style-3d' : 'Wrap parent with perspective-1000, child uses transform-style-3d.', source: 'https://tailwindcss.com', createdAt: now, sortOrder: 200 },
-    { _categorySlug: 'frontend', question: isZh ? 'IndexedDB 的最大存储容量是多少？' : 'What is the maximum storage capacity of IndexedDB?', answer: isZh ? '一般来说由浏览器和硬盘决定，通常无固定上限限制。' : 'Determined by browser and available disk space; usually no fixed upper limit.', source: '', createdAt: now, sortOrder: 300 },
-    { _categorySlug: 'vocab', question: 'ephemeral', answer: isZh ? 'adj. 朝生暮死、转瞬即逝的' : 'adj. lasting for a very short time; transitory', source: 'https://ldoceonline.com', createdAt: now, sortOrder: 400 },
-    { _categorySlug: 'vocab', question: 'serendipity', answer: isZh ? 'n. 缘分、不期而遇的小确幸' : 'n. the occurrence of happy or beneficial events by chance', source: 'https://ldoceonline.com', createdAt: now, sortOrder: 500 },
-    { _categorySlug: 'notes', question: isZh ? '今晚去超市记得买咖啡豆和全脂牛奶。📢' : 'Remember to buy coffee beans and whole milk tonight. 📢', answer: isZh ? '未设置反面内容' : 'No answer set', source: '', createdAt: now, sortOrder: 600 },
-    { _categorySlug: 'notes', question: isZh ? '看完了《设计心理学》，需要整理一份拟物化心流笔记。' : 'Finished "The Design of Everyday Things" — need to organize skeuomorphic flow notes.', answer: isZh ? '未设置反面内容' : 'No answer set', source: '', createdAt: now, sortOrder: 700 },
+    { _categorySlug: 'frontend', isSeed: 1, question: isZh ? '如何在 CSS 中利用多层 box-shadow 完美优雅地模拟出卡片层叠堆起的物理厚度？' : 'How to elegantly simulate card stack physical thickness using CSS multi-layer box-shadow?', answer: isZh ? '使用逗号分隔多组阴影偏移量即可。' : 'Use comma-separated multiple shadow offsets.', source: 'https://developer.mozilla.org', createdAt: now, sortOrder: 100 },
+    { _categorySlug: 'frontend', isSeed: 1, question: isZh ? 'Tailwind CSS 的 perspective 属性如何开启 3D 空间？' : 'How does Tailwind CSS perspective property enable 3D space?', answer: isZh ? '外层包裹 perspective-1000，内层开启 transform-style-3d' : 'Wrap parent with perspective-1000, child uses transform-style-3d.', source: 'https://tailwindcss.com', createdAt: now, sortOrder: 200 },
+    { _categorySlug: 'frontend', isSeed: 1, question: isZh ? 'IndexedDB 的最大存储容量是多少？' : 'What is the maximum storage capacity of IndexedDB?', answer: isZh ? '一般来说由浏览器和硬盘决定，通常无固定上限限制。' : 'Determined by browser and available disk space; usually no fixed upper limit.', source: '', createdAt: now, sortOrder: 300 },
+    { _categorySlug: 'vocab', isSeed: 1, question: 'ephemeral', answer: isZh ? 'adj. 朝生暮死、转瞬即逝的' : 'adj. lasting for a very short time; transitory', source: 'https://ldoceonline.com', createdAt: now, sortOrder: 400 },
+    { _categorySlug: 'vocab', isSeed: 1, question: 'serendipity', answer: isZh ? 'n. 缘分、不期而遇的小确幸' : 'n. the occurrence of happy or beneficial events by chance', source: 'https://ldoceonline.com', createdAt: now, sortOrder: 500 },
+    { _categorySlug: 'notes', isSeed: 1, question: isZh ? '今晚去超市记得买咖啡豆和全脂牛奶。📢' : 'Remember to buy coffee beans and whole milk tonight. 📢', answer: isZh ? '未设置反面内容' : 'No answer set', source: '', createdAt: now, sortOrder: 600 },
+    { _categorySlug: 'notes', isSeed: 1, question: isZh ? '看完了《设计心理学》，需要整理一份拟物化心流笔记。' : 'Finished "The Design of Everyday Things" — need to organize skeuomorphic flow notes.', answer: isZh ? '未设置反面内容' : 'No answer set', source: '', createdAt: now, sortOrder: 700 },
     {
       _categorySlug: 'frontend',
+      isSeed: 1,
       type: 'article',
       sortOrder: 800,
       question: isZh
