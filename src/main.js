@@ -18,16 +18,26 @@ const { locale } = useI18n()
 
 seedDatabase(locale.value).then(async () => {
   // ===== 来自浏览器扩展的导入请求 =====
-  // URL 形如：https://card.cnotely.com/?import=1#card=<encoded JSON>
+  // 新版 URL 形如：https://card.cnotely.com/?import=1&card=<encoded JSON>（query，避免与 hash 路由冲突）
+  // 兼容旧版：#card=<encoded JSON>（hash）
   // 由 note-plugin 投射时构造，避免跨域通信
   try {
-    const hash = window.location.hash || ''
-    const hashMatch = hash.match(/card=([^&]+)/)
-    if (hashMatch) {
-      const encoded = decodeURIComponent(hashMatch[1])
-      const data = JSON.parse(encoded)
-      // 清理 URL 防止刷新重复导入
-      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    const params = new URLSearchParams(window.location.search)
+    let encoded = params.get('card')
+    if (!encoded) {
+      const hashMatch = (window.location.hash || '').match(/card=([^&]+)/)
+      if (hashMatch) encoded = hashMatch[1]
+    }
+    if (encoded) {
+      const data = JSON.parse(decodeURIComponent(encoded))
+      // 清理 URL 防止刷新重复导入（移除 card 参数，保留其余 query）
+      params.delete('card')
+      const cleanSearch = params.toString()
+      window.history.replaceState(
+        null,
+        '',
+        window.location.pathname + (cleanSearch ? '?' + cleanSearch : '')
+      )
       // 写入 IndexedDB
       const { createCard, openCardWindow } = useCardStore()
       const cardId = await createCard({

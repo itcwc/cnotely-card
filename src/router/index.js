@@ -11,6 +11,11 @@ const routes = [
     name: 'Review',
     component: () => import('../views/ReviewView.vue'),
   },
+  {
+    // 兜底：未匹配路由（如异常投射 URL）统一回到桌面，避免白屏
+    path: '/:pathMatch(.*)*',
+    redirect: '/',
+  },
 ]
 
 const router = createRouter({
