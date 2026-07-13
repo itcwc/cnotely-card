@@ -3,6 +3,11 @@ import { db } from '../db'
 
 const SETTINGS_KEY = 'appSettings'
 
+// Dexie settings 表引用（用于存储大体积数据如 customWallpaper）
+const settingsTable = db.settings
+
+let _lastPersistedCw = undefined // 避免重复写 IndexedDB
+
 const defaults = {
   // 外观
   theme: 'light',
@@ -81,7 +86,21 @@ function setBulk(obj) {
 
 async function persist() {
   try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...settings.value }))
+    const data = { ...settings.value }
+    // 自定义壁纸 base64 体积太大，不适合 localStorage，单独存 IndexedDB
+    const cw = data.customWallpaper
+    delete data.customWallpaper
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data))
+
+    // 只在壁纸数据变化时写 IndexedDB，避免频繁无意义写入
+    if (cw !== _lastPersistedCw) {
+      _lastPersistedCw = cw
+      if (cw) {
+        await settingsTable.put({ key: 'customWallpaper', value: cw })
+      } else {
+        await settingsTable.delete('customWallpaper')
+      }
+    }
   } catch (e) {
     console.error('[useSettings persist] ERROR:', e)
   }
@@ -105,6 +124,20 @@ async function init() {
       }
     } catch (e) {
       console.error('[useSettings init] parse error:', e)
+    }
+    // 从 IndexedDB 恢复自定义壁纸（避免 base64 撑爆 localStorage）
+    try {
+      const cwRow = await settingsTable.get('customWallpaper')
+      if (cwRow && cwRow.value) {
+        settings.value.customWallpaper = cwRow.value
+        _lastPersistedCw = cwRow.value
+      } else if (settings.value.customWallpaper) {
+        // 迁移：localStorage 中有旧的自定义壁纸数据，写入 IndexedDB
+        await settingsTable.put({ key: 'customWallpaper', value: settings.value.customWallpaper })
+        _lastPersistedCw = settings.value.customWallpaper
+      }
+    } catch (e) {
+      console.error('[useSettings init] wallpaper load error:', e)
     }
     // locale 以 localStorage 为准（i18n.js 也存这里），修复默认值变更后老数据缺失导致切回英文
     try {
